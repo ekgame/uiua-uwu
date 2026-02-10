@@ -52,6 +52,16 @@
   Dump ← $"_\r\n_" ⊃($"_ _ HTTP/1.1" ⊃Method Path|Headers~Dump Headers)
 └─╴
 
+# Represents an HTTP response header parsed from a raw byte stream,
+# without any validation, normalization, or path decoding applied.
+┌─╴RawHttpResponseHeader
+  ~ {StatusCode Headers}
+
+  # Dump the response header to a string.
+  # String ? RawHttpResponseHeader
+  Dump ← $"_\r\n_" ⊃($"HTTP/1.1 _" StatusCode|Headers~Dump Headers)
+└─╴
+
 # Defines strategies for reading the body of an HTTP message from a byte stream.
 ┌─╴BodyReadingStrategy
   |Empty
@@ -60,9 +70,9 @@
 
   # Infer a strategy for reading the body of an HTTP request based on its headers.
   # Body ? RawHttpRequestHeader
-  InferBodyReadingStrategyFromRequest ← ⍣(
-    Chunked °1 RawHttpRequestHeader~Headers≈IsChunked
-  | ContentLength RawHttpRequestHeader~Headers≈GetContentLength
+  InferBodyReadingStrategyFromHeaders ← ⍣(
+    Chunked °1 Headers~IsChunked
+  | ContentLength Headers~GetContentLength
   | Empty
   )
 
@@ -75,6 +85,13 @@
     # TODO: implement chunked transfer decoding
     ⍤"Chunked body decoding is currently unsupported"0
   )
+
+  # Read the body from a stream given the headers and the stream.
+  # Body ? Headers StreamHandle
+  FromHeadersAndStream ← (
+    InferBodyReadingStrategyFromHeaders
+    ReadBodyFromStream
+  )
 └─╴
 
 # Represents a raw HTTP request parsed from a byte stream, without any validation, normalization.
@@ -83,7 +100,24 @@
 
   # Dump HTTP request to a byte array suitable for sending over a network.
   # ByteArray ? RawHttpRequest
-  ToBytes ← ⊂⊃(utf₈ ˜⊂"\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|Body)
+  ToBytes ← ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|Body)
+
+  # Debug dump the request to a string, with the body truncated if it's not valid UTF-8.
+  # String ? RawHttpRequest
+  DebugDump ← ⊂⊃(˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|⍣(°utf₈|"[binary data]") Body)
+└─╴
+
+# Represents a raw HTTP response parsed from a byte stream, without any validation, normalization.
+┌─╴RawHttpResponse
+  ~ {RawHttpResponseHeader Body}
+
+  # Dump HTTP response to a byte array suitable for sending over a network.
+  # ByteArray ? RawHttpResponse
+  ToBytes ← ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|Body)
+
+  # Debug dump the response to a string, with the body truncated if it's not valid UTF-8.
+  # String ? RawHttpResponse
+  DebugDump ← ⊂⊃(˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|⍣(°utf₈|"[binary data]") Body)
 └─╴
 
 # Represents a parsed and validated HTTP request or a request built programmatically.
@@ -132,6 +166,25 @@ ParseRequestFromStream ← (
   )
 
   ParseRequestHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  ⟜BodyReadingStrategy!(ReadBodyFromStream InferBodyReadingStrategyFromRequest)
+  ⟜(BodyReadingStrategy~FromHeadersAndStream RawHttpRequestHeader~Headers)
   RawHttpRequest
+)
+
+# Parses an HTTP response from a byte stream.
+# Will throw an error if the response is malformed.
+# RawHttpResponse ? StreamHandle
+ParseResponseFromStream ← (
+  # RawHttpResponseHeader ? String
+  ParseResponseHeader ← (
+    ParseResponseLine ← ⊡₁ °/$"_ _"
+    SplitLines ← °/$"_\r\n_"
+  
+    °⊂ SplitLines
+    ⊓(ParseResponseLine|Headers~FromString)
+    RawHttpResponseHeader
+  )
+
+  ParseResponseHeader ↘¯4 ⊸&ru "\r\n\r\n"
+  ⟜(BodyReadingStrategy~FromHeadersAndStream RawHttpResponseHeader~Headers)
+  RawHttpResponse
 )
