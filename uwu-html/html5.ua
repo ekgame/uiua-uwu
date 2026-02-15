@@ -1,4 +1,5 @@
 ~ "xml.ua" ~ DefineTag! DefineVoid!
+~ "../uwu-utils/lib.ua" ~ Strings
 
 # All tags: https://www.w3schools.com/tags
 # Global attributes: https://www.w3schools.com/tags/ref_standardattributes.asp
@@ -146,3 +147,9 @@ Body!      ← InnerBody‼^∘
 InnerHead‼ ↚ Head‼^0^1
 Head       ← InnerHead‼∘∘
 Head!      ← InnerHead‼^∘
+
+Escape ← (
+  Strings~Replace "<" "&lt;"
+  Strings~Replace ">" "&gt;"
+  Strings~Replace "&" "&amp;"
+)
