@@ -130,13 +130,13 @@ GlobalAttributes ← /$"_|_" {
   }
 )^!∘
 
-WithDoctype ← ⊂$"<!DOCTYPE _>"
+WithDoctype ← ⊂$"<!DOCTYPE _>\n"
 Comment     ← $"<!-- _ -->"
 
 # Re-export the html element to include doctype.
 # Re-export html, head and body to require body for convenience.
 
-HtmlInner‼ ↚ WithDoctype "html5" Html‼^0^1
+HtmlInner‼ ↚ WithDoctype "html" Html‼^0^1
 Html       ← HtmlInner‼∘∘
 Html!      ← HtmlInner‼^∘
 
