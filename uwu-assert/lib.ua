@@ -75,7 +75,14 @@ Int ← ⍣(
 # ? Any
 String ← ⍣(
   Shape [∞] ⊸CharacterType
-| ⍤⊙0 AppendCause!$"Expected a String, got _")
+| ⍤⊙0 AppendCause!$"Expected a String, got _" repr)
+
+# Assert that the argument is a byte array. A byte array is a 1D array of numbers between 0 and 255.
+# ? Any
+ByteArray ← ⍣(
+  ⬚1/↧↧ ⊃≥₀<₂₅₆ ⊸Shape [∞] ⊸NumberType
+  ⍤"Array contains values outside of a byte range"
+| ⍤⊙0 AppendCause!$"Expected a ByteArray, got _" repr)
 
 # Assert that the argument is a map.
 # ? Any
@@ -113,3 +120,21 @@ Numeric ← ⍣(
   Any!(Scalar!NumberType|◌⋕ ⊸String)
 | ⍤⊙0 $"Expected a numeric value, got _" repr)
 
+# Assert that the argument matches the shape of the struct.
+# ? Struct Any
+Struct! ← ⍣(◌^°^|⍤⊙0 AppendCause!$"Expected a struct, got _" repr)
+
+# Assert that the argument is a Uiua handle.
+# 
+# Note: there isn't really a way to make sure this value is a hanlde,
+# but Uiua handles are always boxed integers, so this is at least a sanity check.
+# ? Any
+Handle ← ⍣(Boxed!Scalar!Int|⍤⊙0 $"Expected a Uiua handle, got _" repr)
+
+# Assert that the argument is a stream handle.
+# ? Any
+StreamHandle ← Handle
+
+# Assert that the argument is a file handle.
+# ? Any
+FileHandle ← Handle

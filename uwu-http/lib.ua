@@ -1,11 +1,15 @@
 # Experimental!
 
 ~ "../uwu-utils/lib.ua" ~ Strings
+Assert ~ "../uwu-assert/lib.ua"
 
 # Defines headers (key-value pairs) for HTTP messages.
 # Expects to be struct of arrays of {Name Value} pairs.
 ┌─╴Headers
-  ~ {Name Value}
+  ~ {
+    Name: Assert!List!String
+    Value: Assert!List!String
+  }
 
   # Expect a single header with the given name, return its value.
   # Throws an error if there are zero more headers with the given name.
@@ -17,13 +21,17 @@
   )
 
   # Parse headers from a string.
-  # Headers ? String
-  FromString ← Headers ⍚(⊙Strings~Trim °$"_:_")
+  # Headers ? List!String
+  FromStringLines ← (
+    ⊸Assert!List!String
+    Headers ⍚(⊙Strings~Trim °$"_:_")
+  )
 
   # Attempt to get declared content length from headers.
   # Throws an error if Content-Length header is no present or invalid.
-  # Int ? Headers
+  # Int ? Struct!Headers
   GetContentLength ← (
+    ⊸Assert!Struct!Headers
     Headers~ExpectOne "Content-Length"
     ⍣(⋕|⍤"'Content-Length' must be a number"0)
     ⟜(⍤"'Content-Length' must be zero or positive"≥0)
@@ -31,49 +39,74 @@
   )
 
   # Get declared transfer encodings from headers.
-  # ListOfEncodings ? Headers
-  GetTransferEncodings ← ⍣(¯⌵ ≡Strings~Trim °/$"_,_" Headers~ExpectOne "Transfer-Encoding"|{})
+  # ListOfEncodings ? Struct!Headers
+  GetTransferEncodings ← (
+    ⊸Assert!Struct!Headers
+    ⍣(¯⌵ ≡Strings~Trim °/$"_,_" Headers~ExpectOne "Transfer-Encoding"|{})
+  )
 
   # Infer whether the request body should be read in chunked mode.
   # Bool ? Headers
-  IsChunked ← ˜∊ □"chunked" GetTransferEncodings
+  IsChunked ← (
+    ⊸Assert!Struct!Headers
+    ˜∊ □"chunked" GetTransferEncodings
+  )
 
   # Dump headers to a string.
-  Dump ← /$"_\r\n_" ⍚$"_: _" °Headers
+  # String ? Struct!Headers
+  Dump ← (
+    ⊸Assert!Struct!Headers
+    /$"_\r\n_" ⍚$"_: _" °Headers
+  )
 └─╴
 
 # Represents an HTTP request header parsed from a raw byte stream,
 # without any validation, normalization, or path decoding applied.
 ┌─╴RawHttpRequestHeader
-  ~ {Method Path Headers}
+  ~ {
+    Method: Assert!String
+    Path: Assert!String
+    Headers: Assert!Struct!Headers
+  }
 
   # Dump the request header to a string.
   # String ? RawHttpRequestHeader
-  Dump ← $"_\r\n_" ⊃($"_ _ HTTP/1.1" ⊃Method Path|Headers~Dump Headers)
+  Dump ← (
+    ⊸Assert!Struct!RawHttpRequestHeader
+    $"_\r\n_" ⊃($"_ _ HTTP/1.1" ⊃Method Path|Headers~Dump Headers)
+  )
 └─╴
 
 # Represents an HTTP response header parsed from a raw byte stream,
 # without any validation, normalization, or path decoding applied.
 ┌─╴RawHttpResponseHeader
-  ~ {StatusCode Headers}
+  ~ {
+    StatusCode: Assert!Int
+    Headers: Assert!Struct!Headers
+  }
 
   # Dump the response header to a string.
   # String ? RawHttpResponseHeader
-  Dump ← $"_\r\n_" ⊃($"HTTP/1.1 _" StatusCode|Headers~Dump Headers)
+  Dump ← (
+    ⊸Assert!Struct!RawHttpResponseHeader
+    $"_\r\n_" ⊃($"HTTP/1.1 _" StatusCode|Headers~Dump Headers)
+  )
 └─╴
 
 # Defines strategies for reading the body of an HTTP message from a byte stream.
 ┌─╴BodyReadingStrategy
   |Empty
-  |ContentLength {Length}
+  |ContentLength {Length: Assert!Int}
   |Chunked
 
   # Infer a strategy for reading the body of an HTTP request based on its headers.
-  # Body ? RawHttpRequestHeader
-  InferBodyReadingStrategyFromHeaders ← ⍣(
-    Chunked °1 Headers~IsChunked
-  | ContentLength Headers~GetContentLength
-  | Empty
+  # Body ? Struct!Headers
+  InferBodyReadingStrategyFromHeaders ← (
+    ⊸Assert!Struct!Headers
+    ⍣(Chunked °1 Headers~IsChunked
+    | ContentLength Headers~GetContentLength
+    | Empty
+    )
   )
 
   # Read the body of an HTTP message from a byte stream given a strategy.
@@ -87,8 +120,9 @@
   )
 
   # Read the body from a stream given the headers and the stream.
-  # Body ? Headers StreamHandle
+  # Body ? Struct!Headers StreamHandle
   FromHeadersAndStream ← (
+    ◡Assert!⊓(Struct!Headers|StreamHandle)
     InferBodyReadingStrategyFromHeaders
     ReadBodyFromStream
   )
@@ -96,33 +130,57 @@
 
 # Represents a raw HTTP request parsed from a byte stream, without any validation, normalization.
 ┌─╴RawHttpRequest
-  ~ {RawHttpRequestHeader Body}
+  ~ {
+    RawHttpRequestHeader: Assert!Struct!RawHttpRequestHeader
+    Body: Assert!ByteArray
+  }
 
   # Dump HTTP request to a byte array suitable for sending over a network.
-  # ByteArray ? RawHttpRequest
-  ToBytes ← ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|Body)
+  # ByteArray ? Struct!RawHttpRequest
+  ToBytes ← (
+    ⊸Assert!Struct!RawHttpRequest
+    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|Body)
+  )
 
   # Debug dump the request to a string, with the body truncated if it's not valid UTF-8.
-  # String ? RawHttpRequest
-  DebugDump ← ⊂⊃(˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|⍣(°utf₈|"[binary data]") Body)
+  # String ? Struct!RawHttpRequest
+  DebugDump ← (
+    ⊸Assert!Struct!RawHttpRequest
+    ⊂⊃(˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|⍣(°utf₈|"[binary data]") Body)
+  )
 └─╴
 
 # Represents a raw HTTP response parsed from a byte stream, without any validation, normalization.
 ┌─╴RawHttpResponse
-  ~ {RawHttpResponseHeader Body}
+  ~ {
+    RawHttpResponseHeader: Assert!Struct!RawHttpResponseHeader
+    Body: Assert!ByteArray
+  }
 
   # Dump HTTP response to a byte array suitable for sending over a network.
-  # ByteArray ? RawHttpResponse
-  ToBytes ← ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|Body)
+  # ByteArray ? Struct!RawHttpResponse
+  ToBytes ← (
+    ⊸Assert!Struct!RawHttpResponse
+    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|Body)
+  )
 
   # Debug dump the response to a string, with the body truncated if it's not valid UTF-8.
-  # String ? RawHttpResponse
-  DebugDump ← ⊂⊃(˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|⍣(°utf₈|"[binary data]") Body)
+  # String ? Struct!RawHttpResponse
+  DebugDump ← (
+    ⊸Assert!Struct!RawHttpResponse
+    ⊂⊃(˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|⍣(°utf₈|"[binary data]") Body)
+  )
 └─╴
 
 # Represents a parsed and validated HTTP request or a request built programmatically.
 ┌─╴HttpRequest
-  ~ {Method Path Query Headers Body}
+  ~ {
+    Method: Assert!String
+    Path: Assert!String
+    Query: Assert!String
+    Headers: Assert!Struct!Headers
+    Body: Assert!Any!(ByteArray|String)
+  }
 
   # TODO: Validate method
   # TODO: Decode path
@@ -157,16 +215,18 @@
 ParseRequestFromStream ← (
   # RawHttpRequestHeader ? String
   ParseRequestHeader ← (
-    ParseRequestLine ← ⊙⊙◌ °$"_ _ _"
-    SplitLines ← °/$"_\r\n_"
-  
-    °⊂ SplitLines
-    ⊓(ParseRequestLine|Headers~FromString)
+    ⊸Assert!String
+    °⊂ °/$"_\r\n_"
+    ⊓(⊙⊙◌ °$"_ _ _"
+    | Headers~FromStringLines)
     RawHttpRequestHeader
   )
 
+  ⊸Assert!StreamHandle
   ParseRequestHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  ⟜(BodyReadingStrategy~FromHeadersAndStream RawHttpRequestHeader~Headers)
+  ⟜(RawHttpRequestHeader~Headers
+    BodyReadingStrategy~FromHeadersAndStream
+  )
   RawHttpRequest
 )
 
@@ -176,15 +236,17 @@ ParseRequestFromStream ← (
 ParseResponseFromStream ← (
   # RawHttpResponseHeader ? String
   ParseResponseHeader ← (
-    ParseResponseLine ← ⊡₁ °/$"_ _"
-    SplitLines ← °/$"_\r\n_"
-  
-    °⊂ SplitLines
-    ⊓(ParseResponseLine|Headers~FromString)
+    ⊸Assert!String
+    °⊂ °/$"_\r\n_"
+    ⊓(⊡₁ °/$"_ _"
+    | Headers~FromStringLines)
     RawHttpResponseHeader
   )
 
+  ⊸Assert!StreamHandle
   ParseResponseHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  ⟜(BodyReadingStrategy~FromHeadersAndStream RawHttpResponseHeader~Headers)
+  ⟜(RawHttpResponseHeader~Headers
+    BodyReadingStrategy~FromHeadersAndStream
+  )
   RawHttpResponse
 )
