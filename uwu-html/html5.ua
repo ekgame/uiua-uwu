@@ -148,8 +148,10 @@ InnerHead‼ ↚ Head‼^0^1
 Head       ← InnerHead‼∘∘
 Head!      ← InnerHead‼^∘
 
-Escape ← (
-  Strings~Replace "<" "&lt;"
-  Strings~Replace ">" "&gt;"
-  Strings~Replace "&" "&amp;"
+Escape ← Strings!(
+  Replace "&" "&amp;"
+  Replace "<" "&lt;"
+  Replace ">" "&gt;"
+  Replace "\"" "&quot;"
+  Replace "'" "&apos;"
 )
