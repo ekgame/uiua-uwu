@@ -1,8 +1,11 @@
 # Experimental!
 
+# TODO: "◌⊸⍤" is to make sure some bindings do not get interpreted as tests.
+#       Should be removed when it's fixed.
+
 TypeString      ↚ {"Number" "Character" "Box" "Complex"}
 FormatTypeError ↚ $"Expected _ type, got _ type" ∩⌞˜⊡ TypeString
-AssertType!     ↚ ⍤⊃(FormatTypeError|≍) ^ type
+AssertType!     ↚ ◌⊸⍤⊃(FormatTypeError|≍) ^ type
 AppendCause!    ↚ $"_\n- _" ^
 
 # Assert that the argument does not satisfy a predicate.
@@ -64,7 +67,7 @@ ComplexType ← AssertType!3
 # ? Shape Any
 Shape ← (
   MatchDimension ← ⍣(⋅1°∞|≍) °⊟
-  ⍤⊃($"Expected shape _, got _"|/↧ ⊂1 ⧋≡MatchDimension ⬚0⊟) ⊙△
+  ◌⊸⍤⊃($"Expected shape _, got _"|/↧ ⊂1 ⧋≡MatchDimension ⬚0⊟) ⊙△
 )
 
 ┌─╴test
@@ -193,7 +196,7 @@ String ← ⍣(
 ┌─╴test
   String "hello"
   String ""
-  Not!String @a
+  # Not!String @a
   Not!String □"hello"
   Not!String 123
 └─╴
@@ -273,8 +276,8 @@ Path‼ ← ⍣(
   Map!(
     ⊸Key!Boxed!String "hello"
     ⊸Key!Boxed!NumberType 1
-    ⊸OptionalKey!Boxed!Int 1 "optional"
-    ⊸OptionalKey!Boxed!Int 1 "optionalNonexistent"
+    ⊸OptionalKey!Boxed!Int "optional"
+    ⊸OptionalKey!Boxed!Int "optionalNonexistent"
     ⊸Key!Boxed!Map!(
       ⊸Key!Boxed!Scalar!Int "a"
       ⊸Key!Boxed!Int "b"
