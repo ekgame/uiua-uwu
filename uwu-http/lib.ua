@@ -239,7 +239,7 @@ IsStatusCode ← (
   GetComputedHeaders ← (
     ⊸Assert!Struct!Request
     ⊙Headers~Default
-    ⟜(⍥(Headers~Set "Content-Length") ⊸>₀⧻Body)
+    ⟜(⨬(◌|Headers~Set "Content-Length") ⊸>₀⧻Body)
     Headers~Set "Host" Host
   )
 
@@ -275,9 +275,10 @@ IsStatusCode ← (
 
   # Get computed headers that will be sent in the response.
   # Headers ? Struct!Response
-  GetComputedHeaders ← Headers!(
-    ⊙Default
-    ⍥Set ⊙"Content-Length" ⊸>₀⧻Body
+  GetComputedHeaders ← (
+    ⊸Assert!Struct!Response
+    ⊙Headers~Default
+    ⨬(◌|Headers~Set "Content-Length") ⊸>₀⧻Body
   )
 
   # Convert a structured response to a raw response for sending over a network.
