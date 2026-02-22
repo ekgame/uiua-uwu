@@ -156,3 +156,22 @@ $ HTTP/1.1 204
 $ 
 $ 
 ˙⍤≍
+
+# --- Response shortcut tests ---
+
+Http~ResponseOk "Hello, world!"
+ResponseToString
+$ HTTP/1.1 200
+$ Content-Length: 13
+$ 
+$ Hello, world!
+˙⍤≍
+
+Http~ResponseOk!(AddHeader "Custom-Header" "CustomValue") "Hello, world!"
+ResponseToString
+$ HTTP/1.1 200
+$ Custom-Header: CustomValue
+$ Content-Length: 13
+$ 
+$ Hello, world!
+˙⍤≍

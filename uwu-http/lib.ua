@@ -475,3 +475,19 @@ BuildRequest! ← RequestBuilder!(Build RequestBuilder!^ Default)
 # Build a response using the ResponseBuilder.
 # Response ? ResponseBuilder
 BuildResponse! ← ResponseBuilder!(Build ResponseBuilder!^ Default)
+
+ResponseShorthand! ↚^ (
+  ~Args {StatusCode Name}
+  ⊃(⋅∘|∘|⋅∘|⋅∘) °Args
+  $$ Response_! ← ResponseBuilder!(Build ResponseBuilder!(^ ˜Body StatusCode _) Default)
+  $$ Response_ ← Response_!∘
+)
+
+ResponseShorthand!(200|Ok)
+ResponseShorthand!(201|Created)
+ResponseShorthand!(204|NoContent)
+ResponseShorthand!(400|BadRequest)
+ResponseShorthand!(401|Unauthorized)
+ResponseShorthand!(403|Forbidden)
+ResponseShorthand!(404|NotFound)
+ResponseShorthand!(500|InternalServerError)
