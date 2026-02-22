@@ -16,6 +16,32 @@ IsStatusCode ← (
     Value: Assert!List!String
   }
 
+  # Default empty headers struct.
+  # Headers ?
+  Default ← Headers {} {}
+
+  # Add a header to the headers struct.
+  # Headers ? HeaderName HeaderValue Headers
+  Add ← (
+    ◡Assert!⊓(String|String|Struct!Headers)
+    ⍚(˜⊂□) □₂
+  )
+
+  # Set a header, replacing any existing headers with the same name.
+  # Headers ? HeaderName HeaderValue Headers
+  Set ← (
+    ◡Assert!⊓(String|String|Struct!Headers)
+    Add ⟜₂(⍚▽ ⊸(¤≠⊃(□∘|⋅⋅Name)))
+  )
+
+  # Merge header entries from the first headers struct to the second one.
+  # The entries from the first struct will override entries in the second struct.
+  # Headers ? Headers Headers
+  MergeOverride ← (
+    ◡Assert!⊓(Struct!Headers|Struct!Headers)
+    ◇∧◇Set ⊃(°⊟|⋅□)
+  )
+
   # Expect a single header with the given name, return its value.
   # Throws an error if there are zero more headers with the given name.
   # Value ? HeaderName Headers
@@ -189,7 +215,8 @@ IsStatusCode ← (
     Body: Assert!ByteArray
   }
 
-  # TODO: Decode query
+  # Convert a raw request to a structured request, validating the method, host, path, and headers.
+  # Request ? Struct!RawRequest
   FromRawRequest ← (
     ExtractNormalizedMethod ← (
       ValidMethods ← {"GET" "HEAD" "POST" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"}
@@ -197,6 +224,7 @@ IsStatusCode ← (
       ⟜(⍤$"Unrecognized method: _" ⟜(∊ValidMethods □)) ⌵
     )
     ExtractHost ← Headers~ExpectOne "Host" RawRequest~RawRequestHeader≈Headers
+    # FIXME: Decode query
     ExtractPathAndQuery ← ⍣(°$"_?_"|⊙⋅"") RawRequest~RawRequestHeader≈Path
     ExtractHeaders ← RawRequest~RawRequestHeader≈Headers
     ExtractBody ← RawRequest~Body
@@ -206,12 +234,58 @@ IsStatusCode ← (
     Request
   )
 
+  # Get computed headers that will be sent in the request.
+  # Headers ? Struct!Request
+  GetComputedHeaders ← (
+    ⊸Assert!Struct!Request
+    ⊙Headers~Default
+    ⟜(⍥(Headers~Set "Content-Length") ⊸>₀⧻Body)
+    Headers~Set "Host" Host
+  )
+
+  # Convert a structured request to a raw request for sending over a network.
+  # RawRequest ? Struct!Request
   ToRawRequest ← (
     FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) Query)
   
     ⊸Assert!Struct!Request
-    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|Headers)|Body)
+    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|Headers~MergeOverride ⊸GetComputedHeaders Headers)|Body)
     RawRequest
+  )
+└─╴
+
+┌─╴Response
+  ~ {
+    StatusCode: IsStatusCode
+    Headers: Assert!Struct!Headers
+    Body: Assert!ByteArray
+  }
+
+  # Convert a raw response to a structured response, validating the status code and headers.
+  # Response ? Struct!RawResponse
+  FromRawResponse ← (
+    ExtractStatusCode ← RawResponse~RawResponseHeader≈StatusCode
+    ExtractHeaders ← RawResponse~RawResponseHeader≈Headers
+    ExtractBody ← RawResponse~Body
+  
+    ⊸Assert!Struct!RawResponse
+    ⊃(ExtractStatusCode|ExtractHeaders|ExtractBody)
+    Response
+  )
+
+  # Get computed headers that will be sent in the response.
+  # Headers ? Struct!Response
+  GetComputedHeaders ← Headers!(
+    ⊙Default
+    ⍥Set ⊙"Content-Length" ⊸>₀⧻Body
+  )
+
+  # Convert a structured response to a raw response for sending over a network.
+  # RawResponse ? Struct!Response
+  ToRawResponse ← (
+    ⊸Assert!Struct!Response
+    Response!⊃(StatusCode|Headers~MergeOverride ⊸GetComputedHeaders Headers|Body)
+    RawResponse RawResponseHeader
   )
 └─╴
 
@@ -223,8 +297,7 @@ ParseRequestFromStream ← (
   ParseRequestHeader ← (
     ⊸Assert!String
     °⊂ °/$"_\r\n_"
-    ⊓(⊙⊙◌ °$"_ _ _"
-    | Headers~FromStringLines)
+    ⊓(⊙⊙◌ °$"_ _ _"|Headers~FromStringLines)
     RawRequestHeader
   )
 
@@ -234,7 +307,6 @@ ParseRequestFromStream ← (
     RawRequestHeader~Headers
     BodyReadingStrategy~FromHeadersAndStream
   )
-
   Request~FromRawRequest
 )
 
@@ -257,4 +329,5 @@ ParseResponseFromStream ← (
     RawResponseHeader~Headers
     BodyReadingStrategy~FromHeadersAndStream
   )
+  Response~FromRawResponse
 )
