@@ -15,6 +15,7 @@ Assert ~ "../uwu-assert/lib.ua"
   # Throws an error if there are zero more headers with the given name.
   # Value ? HeaderName Headers
   ExpectOne ← (
+    ◡⊓(Assert!String|Assert!Struct!Headers)
     ⤚(▽⊃(=⊓(□|Name)|⋅Value))
     ⟜(⍤$"Expected one '_' header, but got _" ⊃(⋅∘|⧻|=1⧻))
     °□⊢
@@ -172,46 +173,46 @@ Assert ~ "../uwu-assert/lib.ua"
   )
 └─╴
 
-# Represents a parsed and validated HTTP request or a request built programmatically.
+# Represents a request that has been validated and normalized, ready to be handled by the application.
 ┌─╴HttpRequest
   ~ {
     Method: Assert!String
+    Host: Assert!String
     Path: Assert!String
     Query: Assert!String
     Headers: Assert!Struct!Headers
-    Body: Assert!Any!(ByteArray|String)
+    Body: Assert!ByteArray
   }
 
-  # TODO: Validate method
-  # TODO: Decode path
-  # TODO: Decide on body type (ByteArray or String) from Content-Type header
-  # TODO: Truncate body to Content-Length if present, throw error if body is shorter than Content-Length
-  # FromRaw ← (
-  #   ~Properties {
-  #     NormalizedMethod
-  #     HasBody
-  #     ContentLength
-  #   }
+  # TODO: Decode query
+  FromRawRequest ← (
+    ExtractNormalizedMethod ← (
+      ValidMethods ← {"GET" "HEAD" "POST" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"}
+      RawHttpRequest~RawHttpRequestHeader≈Method
+      ⟜(⍤$"Unrecognized method: _" ⟜(∊ValidMethods □)) ⌵
+    )
+    ExtractHost ← Headers~ExpectOne "Host" RawHttpRequest~RawHttpRequestHeader≈Headers
+    ExtractPathAndQuery ← ⍣(°$"_?_"|⊙⋅"") RawHttpRequest~RawHttpRequestHeader≈Path
+    ExtractHeaders ← RawHttpRequest~RawHttpRequestHeader≈Headers
+    ExtractBody ← RawHttpRequest~Body
+  
+    ⊸Assert!Struct!RawHttpRequest
+    ⊃(ExtractNormalizedMethod|ExtractHost|ExtractPathAndQuery|ExtractHeaders|ExtractBody)
+    HttpRequest
+  )
 
-  #   NormalizeMethod ← (
-  #     ValidMethods ← {"GET" "HEAD" "POST" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"}
-  #     ⟜(⍤$"Unrecognized method: _" ⟜(∊ValidMethods □)) ⌵
-  #   )
-  #   HasBodyByMethod ← ∊{"POST" "PUT" "PATCH"}□
-  #   NormalizePath ← ∘ # TODO: decode URL-encoded path
-  #   InferContentLength ← (
-  #     # if Content-Length header is present, use it, otherwise use the length of the raw body
-  #     ⊃[⬚"-1" RawHttpRequest~GetOneHeaderOrDeault "Content-Length"]
-  #   )
-
-  #   ⊃(⟜HasBodyByMethod NormalizeMethod RawHttpRequest~Method
-  #   | InferContentLength)
-  # )
+  ToRawRequest ← (
+    FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) Query)
+  
+    ⊸Assert!Struct!HttpRequest
+    HttpRequest!⊃(RawHttpRequestHeader ⊃(Method|FormatPath|Headers)|Body)
+    RawHttpRequest
+  )
 └─╴
 
 # Parses an HTTP request from a byte stream.
 # Will throw an error if the request is malformed.
-# RawHttpRequest ? StreamHandle
+# HttpRequest ? StreamHandle
 ParseRequestFromStream ← (
   # RawHttpRequestHeader ? String
   ParseRequestHeader ← (
@@ -224,10 +225,12 @@ ParseRequestFromStream ← (
 
   ⊸Assert!StreamHandle
   ParseRequestHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  ⟜(RawHttpRequestHeader~Headers
+  RawHttpRequest ⟜(
+    RawHttpRequestHeader~Headers
     BodyReadingStrategy~FromHeadersAndStream
   )
-  RawHttpRequest
+
+  HttpRequest~FromRawRequest
 )
 
 # Parses an HTTP response from a byte stream.
@@ -238,15 +241,14 @@ ParseResponseFromStream ← (
   ParseResponseHeader ← (
     ⊸Assert!String
     °⊂ °/$"_\r\n_"
-    ⊓(⊡₁ °/$"_ _"
-    | Headers~FromStringLines)
+    ⊓(⊡₁ °/$"_ _"|Headers~FromStringLines)
     RawHttpResponseHeader
   )
 
   ⊸Assert!StreamHandle
   ParseResponseHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  ⟜(RawHttpResponseHeader~Headers
+  RawHttpResponse ⟜(
+    RawHttpResponseHeader~Headers
     BodyReadingStrategy~FromHeadersAndStream
   )
-  RawHttpResponse
 )
