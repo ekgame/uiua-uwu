@@ -126,3 +126,33 @@ $ Host: example.com
 $ 
 $ Hello, world!
 ˙⍤≍
+
+# --- Response building tests ---
+
+ResponseToString ← Http!(
+  Response~ToRawResponse
+  °utf₈ RawResponse~ToBytes
+  Strings~Replace "\r\n" "\n"
+)
+
+Http~BuildResponse!(
+  StatusCode 200
+  Body "Hello, world!"
+  AddHeader "Content-Type" "text/plain"
+)
+ResponseToString
+$ HTTP/1.1 200
+$ Content-Type: text/plain
+$ Content-Length: 13
+$ 
+$ Hello, world!
+˙⍤≍
+
+Http~BuildResponse!(
+  StatusCode 204
+)
+ResponseToString
+$ HTTP/1.1 204
+$ 
+$ 
+˙⍤≍

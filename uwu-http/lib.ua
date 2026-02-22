@@ -126,7 +126,7 @@ IsValidHttpMethod ↚ (
   # String ? RawResponseHeader
   Dump ← (
     ⊸Assert!Struct!RawResponseHeader
-    $"_\r\n_" ⊃($"HTTP/1.1 _" StatusCode|Headers~Dump Headers)
+    /$"_\r\n_" ▽⊸(≠□"") ⊃{$"HTTP/1.1 _" StatusCode|Headers~Dump Headers}
   )
 └─╴
 
@@ -279,14 +279,14 @@ IsValidHttpMethod ↚ (
   GetComputedHeaders ← (
     ⊸Assert!Struct!Response
     ⊙Headers~Default
-    ⨬(◌|Headers~Set "Content-Length") ⊸>₀⧻Body
+    ⨬(◌|Headers~Set "Content-Length" °⋕) ⊸>₀⧻Body
   )
 
   # Convert a structured response to a raw response for sending over a network.
   # RawResponse ? Struct!Response
   ToRawResponse ← (
     ⊸Assert!Struct!Response
-    Response!⊃(StatusCode|Headers~MergeOverride ⊸GetComputedHeaders Headers|Body)
+    Response!⊃(StatusCode|Headers~MergeOverride ⊃(GetComputedHeaders|Headers)|Body)
     RawResponse RawResponseHeader
   )
 └─╴
@@ -423,3 +423,55 @@ ParseResponseFromStream ← (
 # Build a request using the RequestBuilder.
 # Request ? RequestBuilder
 BuildRequest! ← RequestBuilder!(Build RequestBuilder!^ Default)
+
+┌╶╶ResponseBuilder
+  ~ {
+    StatusCode′: IsStatusCode
+    Headers′: Assert!Struct!Headers
+    Body′: Assert!ByteArray
+  }
+
+  Default ← ResponseBuilder ⊃(
+  | $StatusCode 200
+  | $Headers Headers~Default
+  | $Body []
+  )
+
+  # Set the status code for the response.
+  # ResponseBuilder ? StatusCode ResponseBuilder
+  StatusCode ← (
+    ◡Assert!⊓(IsStatusCode|Struct!ResponseBuilder)
+    °⊸StatusCode′ ⌵
+  )
+
+  # Set the body for the response.
+  # ResponseBuilder ? Body ResponseBuilder
+  Body ← (
+    ◡Assert!⊓(Any!(ByteArray|String)|Struct!ResponseBuilder)
+    °⊸Body′ ⍥utf₈ ⊸(≍1type)
+  )
+
+  # Set a header for the response.
+  # ResponseBuilder ? HeaderName HeaderValue ResponseBuilder
+  AddHeader ← (
+    ◡Assert!⊓(String|String|Struct!ResponseBuilder)
+    °⊸Headers′ Headers~Add ⊸⊙⊙Headers′
+  )
+
+  # Set a header for the response, replacing any existing headers with the same name.
+  # ResponseBuilder ? HeaderName HeaderValue ResponseBuilder
+  SetHeader ← (
+    ◡Assert!⊓(String|String|Struct!ResponseBuilder)
+    °⊸Headers′ Headers~Set ⊸⊙⊙Headers′
+  )
+
+  Build ← (
+    ⊸Assert!Struct!ResponseBuilder
+    ⊃(StatusCode′|Headers′|Body′)
+    Response
+  )
+└╶╶
+
+# Build a response using the ResponseBuilder.
+# Response ? ResponseBuilder
+BuildResponse! ← ResponseBuilder!(Build ResponseBuilder!^ Default)
