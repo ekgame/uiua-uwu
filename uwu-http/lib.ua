@@ -3,9 +3,14 @@
 ~ "../uwu-utils/lib.ua" ~ Strings
 Assert ~ "../uwu-assert/lib.ua"
 
-IsStatusCode ← (
+IsStatusCode ↚ (
   ⟜(/↧ ⊃[≥100|<600] ⊸Assert!Scalar!Int)
   ⍤ $"Expected a valid HTTP status code got _"
+)
+
+IsValidHttpMethod ↚ (
+  ValidMethods ← {"GET" "HEAD" "POST" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"}
+  ⍤$"Unrecognized HTTP method: _" ⟜(∊ValidMethods □)
 )
 
 # Defines headers (key-value pairs) for HTTP messages.
@@ -218,17 +223,13 @@ IsStatusCode ← (
   # Convert a raw request to a structured request, validating the method, host, path, and headers.
   # Request ? Struct!RawRequest
   FromRawRequest ← (
-    ExtractNormalizedMethod ← (
-      ValidMethods ← {"GET" "HEAD" "POST" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"}
-      RawRequest~RawRequestHeader≈Method
-      ⟜(⍤$"Unrecognized method: _" ⟜(∊ValidMethods □)) ⌵
-    )
+    ExtractNormalizedMethod ← ⟜IsValidHttpMethod ⌵ RawRequest~RawRequestHeader≈Method
     ExtractHost ← Headers~ExpectOne "Host" RawRequest~RawRequestHeader≈Headers
     # FIXME: Decode query
     ExtractPathAndQuery ← ⍣(°$"_?_"|⊙⋅"") RawRequest~RawRequestHeader≈Path
     ExtractHeaders ← RawRequest~RawRequestHeader≈Headers
     ExtractBody ← RawRequest~Body
-  
+
     ⊸Assert!Struct!RawRequest
     ⊃(ExtractNormalizedMethod|ExtractHost|ExtractPathAndQuery|ExtractHeaders|ExtractBody)
     Request
@@ -239,7 +240,7 @@ IsStatusCode ← (
   GetComputedHeaders ← (
     ⊸Assert!Struct!Request
     ⊙Headers~Default
-    ⟜(⨬(◌|Headers~Set "Content-Length") ⊸>₀⧻Body)
+    ⟜(⨬(◌|Headers~Set "Content-Length" °⋕) ⊸>₀⧻Body)
     Headers~Set "Host" Host
   )
 
@@ -247,9 +248,9 @@ IsStatusCode ← (
   # RawRequest ? Struct!Request
   ToRawRequest ← (
     FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) Query)
-  
+
     ⊸Assert!Struct!Request
-    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|Headers~MergeOverride ⊸GetComputedHeaders Headers)|Body)
+    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|Headers~MergeOverride ⊃(GetComputedHeaders|Headers))|Body)
     RawRequest
   )
 └─╴
@@ -267,7 +268,7 @@ IsStatusCode ← (
     ExtractStatusCode ← RawResponse~RawResponseHeader≈StatusCode
     ExtractHeaders ← RawResponse~RawResponseHeader≈Headers
     ExtractBody ← RawResponse~Body
-  
+
     ⊸Assert!Struct!RawResponse
     ⊃(ExtractStatusCode|ExtractHeaders|ExtractBody)
     Response
@@ -332,3 +333,93 @@ ParseResponseFromStream ← (
   )
   Response~FromRawResponse
 )
+
+┌╶╶RequestBuilder
+  ~ {
+    Method′: IsValidHttpMethod
+    Host′: Assert!String
+    Path′: Assert!String
+    Query′: Assert!String
+    Headers′: Assert!Struct!Headers
+    Body′: Assert!ByteArray
+  }
+
+  Default ← RequestBuilder ⊃(
+  | $Method "GET"
+  | $Host ""
+  | $Path ""
+  | $Query ""
+  | $Headers Headers~Default
+  | $Body []
+  )
+
+  # Set the method for the request.
+  # RequestBuilder ? Method RequestBuilder
+  Method ← (
+    ◡Assert!⊓(String|Struct!RequestBuilder)
+    °⊸Method′ ⌵
+  )
+
+  # Set the host for the request.
+  # RequestBuilder ? Host RequestBuilder
+  Host ← (
+    ◡Assert!⊓(String|Struct!RequestBuilder)
+    °⊸Host′
+  )
+
+  # Set the path for the request.
+  # RequestBuilder ? Path RequestBuilder
+  Path ← (
+    ◡Assert!⊓(String|Struct!RequestBuilder)
+    °⊸Path′
+  )
+
+  # Set the query for the request.
+  # RequestBuilder ? Query RequestBuilder
+  Query ← (
+    ◡Assert!⊓(String|Struct!RequestBuilder)
+    °⊸Query′
+  )
+
+  # Set the body for the request.
+  # RequestBuilder ? Body RequestBuilder
+  Body ← (
+    ◡Assert!⊓(Any!(ByteArray|String)|Struct!RequestBuilder)
+    °⊸Body′ ⍥utf₈ ⊸(≍1type)
+  )
+
+  Url ← (
+    ◡Assert!⊓(String|Struct!RequestBuilder)
+    ⊃(⋅∘
+    | # TODO: This is a very naive URL parser, should be replaced eventually
+      ⍣(°$"http://_"|°$"https://_"|°$"//_"|∘)
+      ⍣(⊙(⊂@/) °$"_/_"|⋅"/")
+      ⊙⍣(°$"_?_"|⊙"")
+    )
+    ˜Query ˜Path ˜Host
+  )
+
+  # Set a header for the request.
+  # RequestBuilder ? HeaderName HeaderValue RequestBuilder
+  AddHeader ← (
+    ◡Assert!⊓(String|String|Struct!RequestBuilder)
+    °⊸Headers′ Headers~Add ⊸⊙⊙Headers′
+  )
+
+  # Set a header for the request, replacing any existing headers with the same name.
+  # RequestBuilder ? HeaderName HeaderValue RequestBuilder
+  SetHeader ← (
+    ◡Assert!⊓(String|String|Struct!RequestBuilder)
+    °⊸Headers′ Headers~Set ⊸⊙⊙Headers′
+  )
+
+  Build ← (
+    ⊸Assert!Struct!RequestBuilder
+    ⊃(Method′|Host′|Path′|Query′|Headers′|Body′)
+    Request
+  )
+└╶╶
+
+# Build a request using the RequestBuilder.
+# Request ? RequestBuilder
+BuildRequest! ← RequestBuilder!(Build RequestBuilder!^ Default)
