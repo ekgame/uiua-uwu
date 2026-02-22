@@ -3,6 +3,11 @@
 ~ "../uwu-utils/lib.ua" ~ Strings
 Assert ~ "../uwu-assert/lib.ua"
 
+IsStatusCode ← (
+  ⟜(/↧ ⊃[≥100|<600] ⊸Assert!Scalar!Int)
+  ⍤ $"Expected a valid HTTP status code got _"
+)
+
 # Defines headers (key-value pairs) for HTTP messages.
 # Expects to be struct of arrays of {Name Value} pairs.
 ┌─╴Headers
@@ -63,7 +68,7 @@ Assert ~ "../uwu-assert/lib.ua"
 
 # Represents an HTTP request header parsed from a raw byte stream,
 # without any validation, normalization, or path decoding applied.
-┌─╴RawHttpRequestHeader
+┌─╴RawRequestHeader
   ~ {
     Method: Assert!String
     Path: Assert!String
@@ -71,25 +76,25 @@ Assert ~ "../uwu-assert/lib.ua"
   }
 
   # Dump the request header to a string.
-  # String ? RawHttpRequestHeader
+  # String ? RawRequestHeader
   Dump ← (
-    ⊸Assert!Struct!RawHttpRequestHeader
+    ⊸Assert!Struct!RawRequestHeader
     $"_\r\n_" ⊃($"_ _ HTTP/1.1" ⊃Method Path|Headers~Dump Headers)
   )
 └─╴
 
 # Represents an HTTP response header parsed from a raw byte stream,
 # without any validation, normalization, or path decoding applied.
-┌─╴RawHttpResponseHeader
+┌─╴RawResponseHeader
   ~ {
-    StatusCode: Assert!Int
+    StatusCode: IsStatusCode
     Headers: Assert!Struct!Headers
   }
 
   # Dump the response header to a string.
-  # String ? RawHttpResponseHeader
+  # String ? RawResponseHeader
   Dump ← (
-    ⊸Assert!Struct!RawHttpResponseHeader
+    ⊸Assert!Struct!RawResponseHeader
     $"_\r\n_" ⊃($"HTTP/1.1 _" StatusCode|Headers~Dump Headers)
   )
 └─╴
@@ -130,51 +135,51 @@ Assert ~ "../uwu-assert/lib.ua"
 └─╴
 
 # Represents a raw HTTP request parsed from a byte stream, without any validation, normalization.
-┌─╴RawHttpRequest
+┌─╴RawRequest
   ~ {
-    RawHttpRequestHeader: Assert!Struct!RawHttpRequestHeader
+    RawRequestHeader: Assert!Struct!RawRequestHeader
     Body: Assert!ByteArray
   }
 
   # Dump HTTP request to a byte array suitable for sending over a network.
-  # ByteArray ? Struct!RawHttpRequest
+  # ByteArray ? Struct!RawRequest
   ToBytes ← (
-    ⊸Assert!Struct!RawHttpRequest
-    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|Body)
+    ⊸Assert!Struct!RawRequest
+    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawRequestHeader~Dump RawRequestHeader|Body)
   )
 
   # Debug dump the request to a string, with the body truncated if it's not valid UTF-8.
-  # String ? Struct!RawHttpRequest
+  # String ? Struct!RawRequest
   DebugDump ← (
-    ⊸Assert!Struct!RawHttpRequest
-    ⊂⊃(˜⊂ "\r\n\r\n" RawHttpRequestHeader~Dump RawHttpRequestHeader|⍣(°utf₈|"[binary data]") Body)
+    ⊸Assert!Struct!RawRequest
+    ⊂⊃(˜⊂ "\r\n\r\n" RawRequestHeader~Dump RawRequestHeader|⍣(°utf₈|"[binary data]") Body)
   )
 └─╴
 
 # Represents a raw HTTP response parsed from a byte stream, without any validation, normalization.
-┌─╴RawHttpResponse
+┌─╴RawResponse
   ~ {
-    RawHttpResponseHeader: Assert!Struct!RawHttpResponseHeader
+    RawResponseHeader: Assert!Struct!RawResponseHeader
     Body: Assert!ByteArray
   }
 
   # Dump HTTP response to a byte array suitable for sending over a network.
-  # ByteArray ? Struct!RawHttpResponse
+  # ByteArray ? Struct!RawResponse
   ToBytes ← (
-    ⊸Assert!Struct!RawHttpResponse
-    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|Body)
+    ⊸Assert!Struct!RawResponse
+    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawResponseHeader~Dump RawResponseHeader|Body)
   )
 
   # Debug dump the response to a string, with the body truncated if it's not valid UTF-8.
-  # String ? Struct!RawHttpResponse
+  # String ? Struct!RawResponse
   DebugDump ← (
-    ⊸Assert!Struct!RawHttpResponse
-    ⊂⊃(˜⊂ "\r\n\r\n" RawHttpResponseHeader~Dump RawHttpResponseHeader|⍣(°utf₈|"[binary data]") Body)
+    ⊸Assert!Struct!RawResponse
+    ⊂⊃(˜⊂ "\r\n\r\n" RawResponseHeader~Dump RawResponseHeader|⍣(°utf₈|"[binary data]") Body)
   )
 └─╴
 
 # Represents a request that has been validated and normalized, ready to be handled by the application.
-┌─╴HttpRequest
+┌─╴Request
   ~ {
     Method: Assert!String
     Host: Assert!String
@@ -188,25 +193,25 @@ Assert ~ "../uwu-assert/lib.ua"
   FromRawRequest ← (
     ExtractNormalizedMethod ← (
       ValidMethods ← {"GET" "HEAD" "POST" "PUT" "DELETE" "CONNECT" "OPTIONS" "TRACE" "PATCH"}
-      RawHttpRequest~RawHttpRequestHeader≈Method
+      RawRequest~RawRequestHeader≈Method
       ⟜(⍤$"Unrecognized method: _" ⟜(∊ValidMethods □)) ⌵
     )
-    ExtractHost ← Headers~ExpectOne "Host" RawHttpRequest~RawHttpRequestHeader≈Headers
-    ExtractPathAndQuery ← ⍣(°$"_?_"|⊙⋅"") RawHttpRequest~RawHttpRequestHeader≈Path
-    ExtractHeaders ← RawHttpRequest~RawHttpRequestHeader≈Headers
-    ExtractBody ← RawHttpRequest~Body
+    ExtractHost ← Headers~ExpectOne "Host" RawRequest~RawRequestHeader≈Headers
+    ExtractPathAndQuery ← ⍣(°$"_?_"|⊙⋅"") RawRequest~RawRequestHeader≈Path
+    ExtractHeaders ← RawRequest~RawRequestHeader≈Headers
+    ExtractBody ← RawRequest~Body
   
-    ⊸Assert!Struct!RawHttpRequest
+    ⊸Assert!Struct!RawRequest
     ⊃(ExtractNormalizedMethod|ExtractHost|ExtractPathAndQuery|ExtractHeaders|ExtractBody)
-    HttpRequest
+    Request
   )
 
   ToRawRequest ← (
     FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) Query)
   
-    ⊸Assert!Struct!HttpRequest
-    HttpRequest!⊃(RawHttpRequestHeader ⊃(Method|FormatPath|Headers)|Body)
-    RawHttpRequest
+    ⊸Assert!Struct!Request
+    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|Headers)|Body)
+    RawRequest
   )
 └─╴
 
@@ -214,41 +219,42 @@ Assert ~ "../uwu-assert/lib.ua"
 # Will throw an error if the request is malformed.
 # HttpRequest ? StreamHandle
 ParseRequestFromStream ← (
-  # RawHttpRequestHeader ? String
+  # RawRequestHeader ? String
   ParseRequestHeader ← (
     ⊸Assert!String
     °⊂ °/$"_\r\n_"
     ⊓(⊙⊙◌ °$"_ _ _"
     | Headers~FromStringLines)
-    RawHttpRequestHeader
+    RawRequestHeader
   )
 
   ⊸Assert!StreamHandle
   ParseRequestHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  RawHttpRequest ⟜(
-    RawHttpRequestHeader~Headers
+  RawRequest ⟜(
+    RawRequestHeader~Headers
     BodyReadingStrategy~FromHeadersAndStream
   )
 
-  HttpRequest~FromRawRequest
+  Request~FromRawRequest
 )
 
 # Parses an HTTP response from a byte stream.
 # Will throw an error if the response is malformed.
-# RawHttpResponse ? StreamHandle
+# RawResponse ? StreamHandle
 ParseResponseFromStream ← (
-  # RawHttpResponseHeader ? String
+  # RawResponseHeader ? String
   ParseResponseHeader ← (
     ⊸Assert!String
     °⊂ °/$"_\r\n_"
-    ⊓(⊡₁ °/$"_ _"|Headers~FromStringLines)
-    RawHttpResponseHeader
+    ⊓(⍣(◇⋕⊡₁ ◇°/$"_ _"|⍤"Failed to parse status code"0)
+    | Headers~FromStringLines)
+    RawResponseHeader
   )
 
   ⊸Assert!StreamHandle
   ParseResponseHeader ↘¯4 ⊸&ru "\r\n\r\n"
-  RawHttpResponse ⟜(
-    RawHttpResponseHeader~Headers
+  RawResponse ⟜(
+    RawResponseHeader~Headers
     BodyReadingStrategy~FromHeadersAndStream
   )
 )
