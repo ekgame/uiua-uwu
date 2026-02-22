@@ -66,8 +66,8 @@ ComplexType ← AssertType!3
 # Assert the shape of the argument. Use inf to allow that dimension to be any size.
 # ? Shape Any
 Shape ← (
-  MatchDimension ← ⍣(⋅1°∞|≍) °⊟
-  ◌⊸⍤⊃($"Expected shape _, got _"|/↧ ⊂1 ⧋≡MatchDimension ⬚0⊟) ⊙△
+  MatchDimension ← ⍣(0⋅°¯1|⋅1°∞|≍) °⊟
+  ◌⊸⍤⊃($"Expected shape _, got _"|/↧ ⊂1 ⧋≡MatchDimension ⬚¯1⊟) ⊙△
 )
 
 ┌─╴test
@@ -196,7 +196,7 @@ String ← ⍣(
 ┌─╴test
   String "hello"
   String ""
-  # Not!String @a
+  Not!String @a
   Not!String □"hello"
   Not!String 123
 └─╴
