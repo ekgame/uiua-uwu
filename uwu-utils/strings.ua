@@ -18,6 +18,19 @@ TrimEnd ← ▽⊸TrimEndMask
 # String ? String
 Trim ← ▽⊸TrimMask
 
+┌─╴test
+  ˙⍤≍ "hello   " TrimStart "   hello   "
+  ˙⍤≍ "   hello" TrimEnd "   hello   "
+  ˙⍤≍ "hello" Trim "   hello   "
+└─╴
+
 # Replace all occurrences of a substring in a string with another substring.
 # String ? SearchSubstring ReplacementSubstring SubjectString
 Replace ← ⍜⊜□(▽⊓⧻□) ⊃⊸∪⦷⋅∘
+
+┌─╴test
+  ˙⍤≍ "hello world" Replace "there" "world" "hello there"
+  ˙⍤≍ "aaaaa" Replace "b" "a" "bbbbb"
+  ˙⍤≍ "hello world" Replace "x" "y" "hello world"
+  ˙⍤≍ "ababab" Replace "cd" "ab" "cdcdcd"
+└─╴
