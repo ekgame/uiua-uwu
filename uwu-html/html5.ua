@@ -147,3 +147,6 @@ Escape ← Strings!(
   Replace "\"" "&quot;"
   Replace "'" "&apos;"
 )
+
+# Escape content inside a HTML element.
+Escape! = ^ Escape
