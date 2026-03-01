@@ -1,6 +1,6 @@
 # Experimental!
 
-~ "../uwu-utils/lib.ua" ~ Strings Streams
+~ "../uwu-utils/lib.ua" ~ Strings
 Assert ~ "../uwu-assert/lib.ua"
 
 IsStatusCode ↚ (
@@ -150,7 +150,7 @@ IsValidHttpMethod ↚ (
   # Bytes ? BodyReadingStrategy StreamHandle
   ReadBodyFromStream ← ⍣(
     [] ◌ °Empty
-  | ⍩Streams~ReadBytes °ContentLength
+  | ⍩&rb °ContentLength
   | °Chunked
     # TODO: implement chunked transfer decoding
     ⍤"Chunked body decoding is currently unsupported"0
