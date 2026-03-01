@@ -56,11 +56,9 @@ DefineTag! ←^ (
   ⊃{DefineAttrs
   | ⊃(¯⌵∘|◇ToConvenientIdentifier|◇ToSafeIdentifier)
     ⊃(⋅∘ | ∘
-    | ⋅∘ | ∘ | ⋅⋅∘
     | ⋅∘ | ∘ | ⋅⋅∘)
-    $$ _  ← TagToString Tag!(°⊸Name "_" New)
-    $$ _! ← TagToString Tag!(˜°⊸Attrs °⊸Name "_" New) _Attrs!^0
-    $$ _‼ ← TagToString Tag!(˜°⊸Children ˜°⊸Attrs °⊸Name "_" New) ⊃(_Attrs!^0|^1)
+    $$ _  ← TagToString Tag!(˜°⊸Children °⊸Name "_" New)
+    $$ _! ← TagToString Tag!(˜°⊸Children ˜°⊸Attrs °⊸Name "_" New) _Attrs!^0
   }
   /$"_\n_"
 )

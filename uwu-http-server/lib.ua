@@ -1,6 +1,5 @@
 Assert ~ "../uwu-assert/lib.ua"
 Http ~ "../uwu-http/lib.ua"
-~ "../uwu-html/lib.ua" ~ Html
 Errors ~ "./errors.ua"
 
 MimeTypesMap ← comptime(

@@ -13,28 +13,28 @@ Styles ← comptime(&fras $"_/resources/style.css" ThisFileDir)
   Request: Assert!Struct!Http~Request
 } ⬚∘Html!(Html {
   Head {
-    Title‼∘(PageTitle °◌)
+    Title PageTitle °◌
     Meta!(°⊸Charset "UTF-8")
     Meta!(°⊸Name "viewport" °⊸Content "width=device-width, initial-scale=1.0")
-    Style‼∘Styles
+    Style Styles
   }
 
   Body {
-    Main‼(°⊸) {
-      Div‼(°⊸Class "heading") {
-        P‼∘($"HTTP _" Status °◌)
-        H₁‼∘(PageTitle °◌)
+    Main {
+      Div!(°⊸Class "heading") {
+        P $"HTTP _" Status °◌
+        H₁ PageTitle °◌
       }
-      Div‼(°⊸Class "error-message") {
-        P‼∘(Message °◌)
+      Div!(°⊸Class "error-message") {
+        P Message °◌
       }
-      Div‼(°⊸Class "request-grid") {
-        Span‼(°⊸Class "muted")"Request"
-        Span‼∘($"_ _" Http~Request!⊃(Method|Path) Request °◌)
+      Div!(°⊸Class "request-grid") {
+        Span!(°⊸Class "muted")"Request"
+        Span $"_ _" Http~Request!⊃(Method|Path) Request °◌
       
         (
-          ⍣(⟜°"" Http~Request~Query Request °◌
-          | {Span‼(°⊸Class "muted")"Query" Span‼∘∘})
+          Http~Request~Query Request °◌
+          ⍣(⟜°""|{Span!(°⊸Class "muted")"Query" Span})
         )
       }
     }
