@@ -13,7 +13,10 @@ MimeTypesMap ← comptime(
 # String ? String
 GetMimeTypeByExtension ← °□ get ⊃(□|MimeTypesMap)
 
-HandleConnection! ← ⍣(
+# Handle an incoming HTTP connection.
+# Takes a stream handle and processes the request.
+# ? (Strict!Http~Response ? Struct!Http~Request) StreamHandle
+HandleConnection! ↚ ⍣(
   # TODO: Run in a loop, handle multiple requests per connection
   # Might have to propose a function to check if a stream is closed.
 
@@ -25,4 +28,11 @@ HandleConnection! ← ⍣(
   &cl ⊸&w Http~RawResponse~ToBytes Http~Response~ToRawResponse
 | &p $"Error: _" &cl)
 
-Serve! ← ⍢(◌poolHandleConnection!^ &tcpa|1) &tcpl
+# Start a HTTP server on the given [HostPort] (string in the format "hostaddress:portnumber").
+# Takes a function that receives a Request and expects a Response.
+# 
+# `? (Strict!Http~Response ? Struct!Http~Request) HostPort:String`
+Serve! ← (
+  ⊸Assert!String
+  ⍢(◌poolHandleConnection!^ &tcpa|1) &tcpl
+)
