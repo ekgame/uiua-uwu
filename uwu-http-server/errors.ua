@@ -22,19 +22,19 @@ Styles ← comptime(&fras $"_/resources/style.css" ThisFileDir)
   Body {
     Main {
       Div!(°⊸Class "heading") {
-        Escape!P $"HTTP _" Status °◌
-        Escape!H₁ PageTitle °◌
+        P Escape!($"HTTP _" Status °◌)
+        H₁ Escape!(PageTitle °◌)
       }
       Div!(°⊸Class "error-message") {
-        Escape!P Message °◌
+        P Escape!(Message °◌)
       }
       Div!(°⊸Class "request-grid") {
-        Span!(°⊸Class "muted")"Request"
-        Escape!Span $"_ _" Http~Request!⊃(Method|Path) Request °◌
+        Span!(°⊸Class "muted") "Request"
+        Span Escape!($"_ _" Http~Request!⊃(Method|Path) Request °◌)
       
         (
           Http~Request~Query Request °◌
-          ⍣(⟜°""|{Span!(°⊸Class "muted")"Query" Escape!Span})
+          ⍣(⟜°""|{Span!(°⊸Class "muted")"Query" Span Escape!∘})
         )
       }
     }
