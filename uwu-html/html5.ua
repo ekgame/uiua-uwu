@@ -1,4 +1,5 @@
-~ "xml.ua" ~ DefineTag! DefineVoid!
+Xml ~ "xml.ua"
+Assert ~ "../uwu-assert/lib.ua"
 ~ "../uwu-utils/lib.ua" ~ Strings
 
 # All tags: https://www.w3schools.com/tags
@@ -10,8 +11,8 @@ GlobalAttributes ← /$"_|_" {
 }
 
 (
-  DefineHtmlElement ← $"DefineTag!(_)" /$"_|_" ˜⊂□GlobalAttributes □
-  DefineHtmlVoidElement ← $"DefineVoid!(_)" /$"_|_" ˜⊂□GlobalAttributes □
+  DefineHtmlElement ← $"Xml~DefineTag!(_)" /$"_|_" ˜⊂□GlobalAttributes □
+  DefineHtmlVoidElement ← $"Xml~DefineVoid!(_)" /$"_|_" ˜⊂□GlobalAttributes □
 
   /$"_\n_" {
     DefineHtmlElement "A|Download|Href|Hreflang|Media|Ping|Referrerpolicy|Rel|Target|Type"
@@ -130,23 +131,20 @@ GlobalAttributes ← /$"_|_" {
   }
 )^!∘
 
-WithDoctype ← ⊂$"<!DOCTYPE _>\n"
-Comment     ← $"<!-- _ -->"
-
-# # Re-export the html element to include doctype.
-# # Re-export html, head and body to require body for convenience.
-
-HtmlInner! ↚ WithDoctype "html" Html!^0
-Html       ← HtmlInner!∘
-Html!      ← HtmlInner!^
-
-Escape ← Strings!(
-  Replace "&" "&amp;"
-  Replace "<" "&lt;"
-  Replace ">" "&gt;"
-  Replace "\"" "&quot;"
-  Replace "'" "&apos;"
+# Render a HTML element to string.
+# If the top-level element is an <html> tag, the DOCTYPE declaration will be added automatically.
+# String ? Element
+ToString ← (
+  Xml~ToString
+  # ⊃{⍣($"<!DOCTYPE _>" ⊸°"html" Xml~Element~Tag~Name ⊸Assert!Struct!Xml~Element~Tag|⋅"")
+  # | Xml~ToString}
+  # /$"_\n_"
 )
 
-# Escape content inside a HTML element.
-Escape! = ^ Escape
+# Create a text element with the given text content, which will not be escaped and will be displayed verbatim.
+# `Tag!RawText ? String`
+UnsafeRawText ← Xml~UnsafeRawText
+
+# Create an HTML comment with the given text content.
+# `Tag!RawText ? String`
+Comment ← UnsafeRawText $"<!-- _ -->"

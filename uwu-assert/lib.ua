@@ -8,6 +8,10 @@ FormatTypeError ↚ $"Expected _ type, got _ type" ∩⌞˜⊡ TypeString
 AssertType!     ↚ ◌⊸⍤⊃(FormatTypeError|≍) ^ type
 AppendCause!    ↚ $"_\n- _" ^
 
+# Check if the argument satisfies a predicate, return a boolean result.
+# Boolean ? (Predicate) Any
+Is! ← ⍣(1^|0)
+
 # Assert that the argument does not satisfy a predicate.
 # ? Predicate Any
 Not! ← ⍤"Expected to fail a predicate" ⍣(0^|1)
@@ -134,7 +138,7 @@ Scalar! ← ⍣(^ ⊸Shape []|⍤⊙0 AppendCause!$"Expected a predicated scalar
 # ? Predicates Any
 Any! ←^ (
   /$"_|_"
-  $$ ⍣(_|⍤⊙0 "Expected to match any of the predicates")
+  ˙$$ ⍣(_|⍤⊙0 "Expected to match any of the predicates: _")
 )
 
 ┌─╴test

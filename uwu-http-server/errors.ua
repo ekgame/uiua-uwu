@@ -11,7 +11,7 @@ Styles ← comptime(&fras $"_/resources/style.css" ThisFileDir)
   PageTitle: Assert!String
   Message: Assert!String
   Request: Assert!Struct!Http~Request
-} ⬚∘Html!(Html {
+} ⬚∘Html!(ToString Html {
   Head {
     Title PageTitle °◌
     Meta!(°⊸Charset "UTF-8")
@@ -22,19 +22,22 @@ Styles ← comptime(&fras $"_/resources/style.css" ThisFileDir)
   Body {
     Main {
       Div!(°⊸Class "heading") {
-        P Escape!($"HTTP _" Status °◌)
-        H₁ Escape!(PageTitle °◌)
+        P ($"HTTP _" Status °◌)
+        H₁ (PageTitle °◌)
       }
       Div!(°⊸Class "error-message") {
-        P Escape!(Message °◌)
+        P (Message °◌)
       }
       Div!(°⊸Class "request-grid") {
         Span!(°⊸Class "muted") "Request"
-        Span Escape!($"_ _" Http~Request!⊃(Method|Path) Request °◌)
+        Span ($"_ _" Http~Request!⊃(Method|Path) Request °◌)
       
         (
           Http~Request~Query Request °◌
-          ⍣(⟜°""|{Span!(°⊸Class "muted")"Query" Span Escape!∘})
+          ⍣(⟜°""|{
+            Span!(°⊸Class "muted") "Query"
+            Span ∘
+          })
         )
       }
     }

@@ -34,3 +34,14 @@ Replace ← ⍜⊜□(▽⊓⧻□) ⊃⊸∪⦷⋅∘
   ˙⍤≍ "hello world" Replace "x" "y" "hello world"
   ˙⍤≍ "ababab" Replace "cd" "ab" "cdcdcd"
 └─╴
+
+Indent ← /$"_\n_" ⍚⊂ ⊓(¤˜▽@\s|°/$"_\n_")
+
+Indent 2 "hello\nworld"
+
+┌─╴test
+  ˙⍤≍ "  " Indent 2 ""
+  ˙⍤≍ "  hello" Indent 2 "hello"
+  ˙⍤≍ "  hello\n  world" Indent 2 "hello\nworld"
+  ˙⍤≍ "  hello\n  world\n  " Indent 2 "hello\nworld\n"
+└─╴
