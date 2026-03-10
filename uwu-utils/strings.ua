@@ -37,8 +37,6 @@ Replace ← ⍜⊜□(▽⊓⧻□) ⊃⊸∪⦷⋅∘
 
 Indent ← /$"_\n_" ⍚⊂ ⊓(¤˜▽@\s|°/$"_\n_")
 
-Indent 2 "hello\nworld"
-
 ┌─╴test
   ˙⍤≍ "  " Indent 2 ""
   ˙⍤≍ "  hello" Indent 2 "hello"
