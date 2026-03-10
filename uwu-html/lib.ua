@@ -1,1 +1,1 @@
-Html ~ "html5.ua"
+Html ~ "html.ua"
