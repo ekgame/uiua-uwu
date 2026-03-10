@@ -80,6 +80,12 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
 
   FlattenChildren   ← |1 ⨬(/◇⊂ ⍚FlattenChildren|□₁) ⊸IsTerminalValue
   NormalizeChildren ← ⍚NormalizeValue FlattenChildren
+
+  TagName ← ⍣(
+    Tag~Name ⊸Assert!Struct!Tag
+  | Void~Name ⊸Assert!Struct!Void
+  | ⍤⊙0 $"The value is not a tag or void element: _" repr
+  )
 └─╴
 
 DefineAttrs ↚ (

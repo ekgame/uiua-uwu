@@ -135,10 +135,8 @@ GlobalAttributes ← /$"_|_" {
 # If the top-level element is an <html> tag, the DOCTYPE declaration will be added automatically.
 # String ? Element
 ToString ← (
-  Xml~ToString
-  # ⊃{⍣($"<!DOCTYPE _>" ⊸°"html" Xml~Element~Tag~Name ⊸Assert!Struct!Xml~Element~Tag|⋅"")
-  # | Xml~ToString}
-  # /$"_\n_"
+  ResolvePrefix ← ⍣($"<!DOCTYPE _>" ⊸°"html" Xml~Element~TagName|⋅"")
+  /$"_\n_" ⊃{ResolvePrefix|Xml~ToString}
 )
 
 # Create a text element with the given text content, which will not be escaped and will be displayed verbatim.
