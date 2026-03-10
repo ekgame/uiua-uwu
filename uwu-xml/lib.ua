@@ -37,6 +37,7 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
   )
 
   AttrsToString ↚ (
+    # TODO: This code feels really convoluted, it should be simplified and made more readable.
     °map
     ⊸(=□"raw")
     ⊃(⍣(IndentNotEmpty °□⊢∪▽|⋅"")
@@ -76,6 +77,7 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
   | ⊸Assert!Struct!RawText
   | NewText ⊸Assert!String
   | NewText "" °{}
+  | NewText "" °[]
   | NewText repr)
 
   FlattenChildren   ← |1 ⨬(/◇⊂ ⍚FlattenChildren|□₁) ⊸IsTerminalValue
@@ -133,3 +135,75 @@ ToString ← Element~ToString
 # Intended for debugging purposes, not for display. The output format may change without warning.
 # String ? Element
 ToDebugString ← Element~DumpDebug
+
+┌─╴test
+  DefineTag!(Div|Id|Class)
+  DefineVoid!(Br|Id|Class)
+
+  ToString Div "Hello, world!"
+  ˙⍤≍ $ <div>Hello, world!</div>
+
+  ToString Div!(°⊸Id "main" °⊸Class "container") "Hello, world!"
+  ˙⍤≍ $ <div id="main" class="container">Hello, world!</div>
+
+  ToString Br
+  ˙⍤≍ $ <br />
+
+  ToString Br!(°⊸Class "line-break")
+  ˙⍤≍ $ <br class="line-break" />
+
+  ToString Div!(°⊸Id "<b>somthing</b>") "<p onclick=\"alert(0)\">Paragraph</p>"
+  ˙⍤≍ $ <div id="&lt;b&gt;somthing&lt;/b&gt;">&lt;p onclick=&quot;alert(0)&quot;&gt;Paragraph&lt;/p&gt;</div>
+
+  ToString Div UnsafeRawText "<p onclick=\"alert(0)\">Paragraph</p>"
+  ˙⍤≍ $ <div><p onclick="alert(0)">Paragraph</p></div>
+
+  ToString Div!(°⊸Raw "data-arbitrary-attr=\"something\"") "Content"
+  ˙⍤≍ $ <div data-arbitrary-attr="something">Content</div>
+
+  ToString Div {"foo" "bar"}
+  ˙⍤≍ $ <div>foobar</div>
+
+  ToString Div {Div "Nested"}
+  ˙⍤≍ $ <div><div>Nested</div></div>
+
+  ToString Div {
+    Div "Nested 1"
+    Div "Nested 2"
+  }
+  ˙⍤≍ $ <div><div>Nested 1</div><div>Nested 2</div></div>
+
+  ToString Div {
+    {"foo" "bar"}
+    {Div "Nested 1" Div "Nested 2"}
+    {{Div "Nested 3"}{Div "Nested 4"}}
+  }
+  ˙⍤≍ $ <div>foobar<div>Nested 1</div><div>Nested 2</div><div>Nested 3</div><div>Nested 4</div></div>
+
+  ToString Div {Br}
+  ˙⍤≍ $ <div><br /></div>
+
+  ToString Div Br
+  ˙⍤≍ $ <div><br /></div>
+
+  ToString Div ""
+  ˙⍤≍ $ <div></div>
+
+  ToString Div {}
+  ˙⍤≍ $ <div></div>
+
+  ToString UnsafeRawText "<>&\"'"
+  ˙⍤≍ $ <>&"'
+
+  ToString Div "<>&\"'"
+  ˙⍤≍ $ <div>&lt;&gt;&amp;&quot;&apos;</div>
+
+  ToString Div 1
+  ˙⍤≍ $ <div>1</div>
+
+  ToString Div [1 2 3]
+  ˙⍤≍ $ <div>[1 2 3]</div>
+
+  ToString Div {[1 2 3] [4 5 6]}
+  ˙⍤≍ $ <div>[1 2 3][4 5 6]</div>
+└─╴

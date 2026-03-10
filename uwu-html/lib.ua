@@ -146,3 +146,18 @@ UnsafeRawText ← Xml~UnsafeRawText
 # Create an HTML comment with the given text content.
 # `Tag!RawText ? String`
 Comment ← UnsafeRawText $"<!-- _ -->"
+
+┌─╴test
+  # TODO: Add tests when inline bindings are accesible 
+
+  # $ <DOCTYPE html>
+  # $ <html><head><title>Hello</title></head><body><h1>World</h1></body></html>
+  # ˙⍤≍ ToString Html {
+  #   Head {
+  #     Title "Hello"
+  #   }
+  #   Body {
+  #     H₁ "World"
+  #   }
+  # }
+└─╴
