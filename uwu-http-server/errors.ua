@@ -48,14 +48,14 @@ Styles ← comptime(&fras $"_/resources/style.css" ThisFileDir)
 
 # Return a HTTP response with the given message as a HTTP 500 Internal Server Error.
 # Response ? String Request 
-RespondInternalServerError ← (
-  ResponseTemplateError 500 "Internal Server Error"
+~RespondInternalServerError {Title ← "Internal Server Error"} (
+  ResponseTemplateError 500 Title
   Http~ResponseInternalServerError
 )
 
 # Return a HTTP response with the given message as a HTTP 404 Not Found.
 # Response ? Request 
-RespondPageNotFound ← (
-  ResponseTemplateError 404 "Not Found" "The requested resource was not found on this server."
+~RespondPageNotFound {Title ← "Not Found"|Message ← "The requested resource was not found on this server."} (
+  ResponseTemplateError 404 ⊃Title Message
   Http~ResponseNotFound
 )
