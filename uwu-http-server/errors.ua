@@ -33,10 +33,12 @@ Styles ← comptime(&fras $"_/resources/style.css" ThisFileDir)
         Span ($"_ _" Http~Request!⊃(Method|Path) Request °◌)
       
         (
-          Http~Request~Query Request °◌
-          ⍣(⟜°""|{
+          ⊸Http~QueryValues~HasValues Http~Request~Query Request °◌
+          ⨬(""|{
             Span!(°⊸Class "muted") "Query"
-            Span ∘
+            Span Http~QueryValues!(
+              ⍚(Span!(°⊸Class "line") $"_ = _") °Http~QueryValues
+            )
           })
         )
       }

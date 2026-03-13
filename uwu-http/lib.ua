@@ -13,6 +13,43 @@ IsValidHttpMethod ↚ (
   ⍤$"Unrecognized HTTP method: _" ⟜(∊ValidMethods □)
 )
 
+UrlEncode ← (
+  Unreserved ← ⍚¤⊂₄ +@0⇡10 +@a⇡26 +@A⇡26 "-._~"
+  EncodeGrapheme ← ⌵♭ ≡◇⊂@% ⍚(⬚@0↙₂) ⌵°⬚@0⋕₁₆utf₈
+  Encode ← ⍜graphemes(⍜▽⍚EncodeGrapheme ⊸(¬∊Unreserved)) ⊸Assert!String
+  Decode ← ⍜⊜□⍚(°utf₈ ≡(⋕₁₆↘₁) ↯∞_3) ↧1⊸⦷"%\W\W" ⊸Assert!String
+
+  ⌅(Encode|Decode)
+)
+
+┌─╴QueryValues
+  ~ {
+    Name: Assert!List!String
+    Value: Assert!List!String
+  }
+
+  HasValues ← (
+    ⊸Assert!Struct!QueryValues
+    ↧1⧻Name
+  )
+
+  UrlEncoded ← (
+    Decode ← (
+      ⊸Assert!String
+      ⍣({} {} °""
+      | ⍚(∩(°UrlEncode Strings~Replace "+" " ") ⍣(°$"_=_"|⊙"")) °/$"_&_")
+      QueryValues ∩⍉
+    )
+
+    Encode ← (
+      ⊸Assert!Struct!QueryValues
+      /$"_&_" ⍚(Strings~Replace "%20" "+" $"_=_" ∩UrlEncode) °QueryValues
+    )
+
+    ⌅(Encode|Decode)
+  )
+└─╴
+
 # Defines headers (key-value pairs) for HTTP messages.
 # Expects to be struct of arrays of {Name Value} pairs.
 ┌─╴Headers
@@ -215,7 +252,7 @@ IsValidHttpMethod ↚ (
     Method: Assert!String
     Host: Assert!String
     Path: Assert!String
-    Query: Assert!String
+    Query: Assert!Struct!QueryValues
     Headers: Assert!Struct!Headers
     Body: Assert!ByteArray
   }
@@ -225,8 +262,7 @@ IsValidHttpMethod ↚ (
   FromRawRequest ← (
     ExtractNormalizedMethod ← ⟜IsValidHttpMethod ⌵ RawRequest~RawRequestHeader≈Method
     ExtractHost ← Headers~ExpectOne "Host" RawRequest~RawRequestHeader≈Headers
-    # FIXME: Decode query
-    ExtractPathAndQuery ← ⍣(°$"_?_"|⊙⋅"") RawRequest~RawRequestHeader≈Path
+    ExtractPathAndQuery ← ⊙°QueryValues~UrlEncoded ⍣(°$"_?_"|⊙⋅"") RawRequest~RawRequestHeader≈Path
     ExtractHeaders ← RawRequest~RawRequestHeader≈Headers
     ExtractBody ← RawRequest~Body
 
@@ -247,10 +283,11 @@ IsValidHttpMethod ↚ (
   # Convert a structured request to a raw request for sending over a network.
   # RawRequest ? Struct!Request
   ToRawRequest ← (
-    FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) Query)
+    FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) QueryValues~UrlEncoded Query)
+    ComputeHeaders ← Headers~MergeOverride ⊃(GetComputedHeaders|Headers)
 
     ⊸Assert!Struct!Request
-    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|Headers~MergeOverride ⊃(GetComputedHeaders|Headers))|Body)
+    Request!⊃(RawRequestHeader ⊃(Method|FormatPath|ComputeHeaders)|Body)
     RawRequest
   )
 └─╴
