@@ -32,7 +32,7 @@ HandleConnection! ↚ ⍣(
 
   # Check that a response was returned
   ⍣(⍩Errors~RespondInternalServerError "Request was not handled" ⊸Assert!Struct!Http~Request|∘)
-  ⍣(⊸Assert!Struct!Http~Response|⍩Errors~RespondInternalServerError $"Something other than a response was produced: _" )
+  ⍣(⊸Assert!Struct!Http~Response|⍩Errors~RespondInternalServerError $"Something other than a response was produced: _")
 
   # In ENV=dev, attempt to insert the hot reload script into the response
   HotReload~InsertScript
