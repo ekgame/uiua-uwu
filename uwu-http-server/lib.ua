@@ -1,6 +1,7 @@
 Assert ~ "../uwu-assert/lib.ua"
 Http ~ "../uwu-http/lib.ua"
 Errors ~ "./errors.ua"
+HotReload ~ "./hot-reload.ua"
 
 MimeTypesMap ← comptime(
   &fras $"_/resources/mime\_types.csv" ThisFileDir
@@ -22,15 +23,25 @@ HandleConnection! ↚ ⍣(
 
   ⊸Assert!StreamHandle
   ⊸Http~ParseRequestFromStream
-  ⍣(^|˜Errors~RespondInternalServerError)
+
+  # Dispatch the request to the the handler to get a response
+  ⍣(HotReload~BuildVersionEndpoint      # The hot reload endpoint only works with ENV=dev environment variable
+  | ^                                   # Then try the user-defined handler
+  | ⍩˜Errors~RespondInternalServerError # If the handler throws an error, return a 500 status with a message
+  )
+
+  # Check that a response was returned
   ⍣(⍩Errors~RespondInternalServerError "Request was not handled" ⊸Assert!Struct!Http~Request|∘)
-  ⊸Assert!Struct!Http~Response
+  ⍣(⊸Assert!Struct!Http~Response|⍩Errors~RespondInternalServerError $"Something other than a response was produced: _" )
+
+  # In ENV=dev, attempt to insert the hot reload script into the response
+  HotReload~InsertScript
   &cl ⊸&w Http~RawResponse~ToBytes Http~Response~ToRawResponse
 | &p $"Error: _" &cl)
 
 # Start a HTTP server on the given [HostPort] (string in the format "hostaddress:portnumber").
 # Takes a function that receives a Request and expects a Response.
-# 
+#
 # `? (Strict!Http~Response ? Struct!Http~Request) HostPort:String`
 Serve! ← (
   ⊸Assert!String
