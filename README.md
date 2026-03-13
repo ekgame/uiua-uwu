@@ -1,17 +1,17 @@
-uwu (_universal web utility_) - is a [Uiua](https://uiua.org/) framework for web applications.
+uwu (_universal web utility_) - a [Uiua](https://uiua.org/) framework for web applications.
 
 > [!WARNING]  
 > this project is heavily work in progress, heavily uses experimental Uiua features which may break with future updates. not recommended for any serious use. unless you want to seriously have fun.
 
 ## features
 
-uwu is the most feature rich implementation of a web framework in Uiua.
+uwu is the most feature-rich implementation of a web framework in Uiua.
 
 - HTTP server
   - message encoding/decoding
   - request/response builder DSL
   - static file serving
-  - built in error pages
+  - built-in error pages
   - hot reloading
   - idiomatic interface
 - HTML builder DSL
@@ -24,7 +24,7 @@ uwu is the most feature rich implementation of a web framework in Uiua.
 
 ## prerequisites
 
-this project uses experimental and cutting-edge Uiua features, which may not even be available in the latest release yet. run `uiua update --main` to build uiua from the latest commit for the best chance to work.
+this project uses experimental and cutting-edge Uiua features, which may not even be available in the latest release yet. run `uiua update --main` to build Uiua from the latest commit for the best chance of it working.
 
 if you want hot-reloading, you will need to install [nodemon](https://nodemon.io/). see the section for [setting up a dev environment](#setting-up-a-dev-environment)
 
@@ -72,8 +72,8 @@ running the entrypoint file as a Uiua application is enough to make it work, but
 
 1. install [nodemon](https://nodemon.io/)
 2. run the command `ENV=dev nodemon --exec "uiua run --no-format" example/main.ua`
-    - it should be run from the top most directory of your project, to make sure it watches for any file changes
-    - `ENV=dev` enables the server insterting a hot-reload script before the `</head>` declaration and adds a special endpoint to make it work
-    - if your editor has auto-save enabled, the server will restart often and constant reformats will make editing code really hard, so I recommend keeping the `--no-format` flag and formatting manually
+    - it should be run from the top-level directory of your project to make sure it watches for any file changes
+    - `ENV=dev` makes the server insert a hot-reload script before the `</head>` declaration and adds a special endpoint to make it work
+    - if your editor has auto-save enabled, the server will restart often, and constant reformatting will make editing code really hard, so I recommend keeping the `--no-format` flag and formatting manually
 3. try editing your app and see it change automatically
 
