@@ -290,6 +290,16 @@ UrlEncode ← (
     Request!⊃(RawRequestHeader ⊃(Method|FormatPath|ComputeHeaders)|Body)
     RawRequest
   )
+
+  BodyAsString ← (
+    ⊸Assert!Struct!Request
+    °utf₈ Body
+  )
+
+  BodyAsForm = (
+    ⊸Assert!Struct!Request
+    QueryValues~UrlEncoded BodyAsString
+  )
 └─╴
 
 ┌─╴Response
