@@ -2,6 +2,7 @@ Assert ~ "../uwu-assert/lib.ua"
 Http ~ "../uwu-http/lib.ua"
 Errors ~ "./errors.ua"
 HotReload ~ "./hot-reload.ua"
+~ "../uwu-utils/lib.ua" ~ Fs
 
 MimeTypesMap ← comptime(
   &fras $"_/resources/mime\_types.csv" ThisFileDir
@@ -46,4 +47,12 @@ HandleConnection! ↚ ⍣(
 Serve! ← (
   ⊸Assert!String
   ⍢(◌poolHandleConnection!^ &tcpa|1) &tcpl
+)
+
+ServeStatic ← (
+  ◡⊓(Assert!String|Assert!Struct!Http~Request)
+  ⟜(Fs~NormalizePath ⊂) ˜⊂@/ ∩Fs~NormalizePath ⊙Http~Request~Path
+  # Ensure the path is within the static directory
+  ⊸⍣(°1⊢⌕|⍤⊙0"Request path tried to escape the directory")
+  Http~ResponseOk &frab
 )
