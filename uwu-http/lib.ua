@@ -33,6 +33,11 @@ UrlEncode ← (
     ↧1⧻Name
   )
 
+  GetOne ← (
+    ◡⊓(Assert!String|Assert!Struct!QueryValues)
+    ⍣(°□⊢▽=⊓(□|⊃Name Value)|°◌)
+  )
+
   UrlEncoded ← (
     Decode ← (
       ⊸Assert!String
@@ -296,9 +301,9 @@ UrlEncode ← (
     °utf₈ Body
   )
 
-  BodyAsForm = (
+  BodyAsForm ← (
     ⊸Assert!Struct!Request
-    QueryValues~UrlEncoded BodyAsString
+    °QueryValues~UrlEncoded BodyAsString
   )
 └─╴
 
