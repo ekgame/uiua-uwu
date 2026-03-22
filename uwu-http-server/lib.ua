@@ -43,7 +43,7 @@ HandleConnection! ↚ ⍣(
 # Start a HTTP server on the given [HostPort] (string in the format "hostaddress:portnumber").
 # Takes a function that receives a Request and expects a Response.
 #
-# `? (Strict!Http~Response ? Struct!Http~Request) HostPort:String`
+# `? (Struct!Http~Response ? Struct!Http~Request) HostPort:String`
 Serve! ← (
   ⊸Assert!String
   ⍢(◌poolHandleConnection!^ &tcpa|1) &tcpl
