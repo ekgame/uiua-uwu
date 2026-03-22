@@ -37,7 +37,7 @@ HttpServer ~ "../uwu-http-server/lib.ua"
 Http ~ "../uwu-http/lib.ua"
 ~ "../uwu-html/lib.ua" ~ Html
 
-HandleIndex ← Http~ResponseOk Html!(ToString Html {
+HandleIndex ← Http.ResponseOk Html!(ToString Html {
   Head {
     Title "uwu demo"
   }
@@ -48,14 +48,14 @@ HandleIndex ← Http~ResponseOk Html!(ToString Html {
 
 # The address to bind the server to.
 "0.0.0.0:8000"
-HttpServer~Serve!(
-  # This macro takes a Http~Request and should produce a Http~Response.
+HttpServer.Serve!(
+  # This macro takes a Http.Request and should produce a Http.Response.
 
-  Http~Request!⍣(
+  Http~Request!⍡(
     # Define a route for the index page and how to handle it
-    ⍩HandleIndex °"/" Path
+    HandleIndex ⍩°"/" Path
   | # Serve static files from a "public" directory, relative to this file (optional)
-    HttpServer~ServeStatic $"_/_" ThisFileDir "/public"
+    ⍩HttpServer~ServeStatic $"_/_" ThisFileDir "/public"
   | # Show an error when no route matches
     HttpServer~Errors~RespondPageNotFound
   )

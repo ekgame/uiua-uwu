@@ -76,10 +76,10 @@ HandleRawHtml ← Http.ResponseOk RenderLayout ⋅Html!{
   Validate ← (
     ⊸Assert!Struct!FormData
     ⊙FormErrors.Default
-    ⟜⍣(°0 =0⧻ Name|FormErrors.Insert⋅"The name cannot be empty")
-    ⟜⍣(°0 >255⧻ Name|FormErrors.Insert⋅"The name cannot be longer than 255 characters")
-    ⟜⍣(°0 =0⧻ Message|FormErrors.Insert⋅"The message cannot be empty")
-    ⟜⍣(°0 >1000⧻ Message|FormErrors.Insert⋅"The message cannot be longer than 1000 characters")
+    ⟜⍡(⍩°0 =0⧻ Name|FormErrors.Insert⋅"The name cannot be empty")
+    ⟜⍡(⍩°0 >255⧻ Name|FormErrors.Insert⋅"The name cannot be longer than 255 characters")
+    ⟜⍡(⍩°0 =0⧻ Message|FormErrors.Insert⋅"The message cannot be empty")
+    ⟜⍡(⍩°0 >1000⧻ Message|FormErrors.Insert⋅"The message cannot be longer than 1000 characters")
     ◌
   )
 
@@ -139,14 +139,14 @@ HandleImages ← Http.ResponseOk RenderLayout⋅Html!({
 
 "0.0.0.0:8000"
 HttpServer.Serve!(
-  Http.Request!⍣(
-    ⍩HandleIndex ⊸(°"/" Path)
-  | ⍩HandleRawHtml ⊸(°"/raw" Path)
-  | ⍩HandleFormGet ⊸⊃(°"GET" Method|°"/form" Path)
-  | ⍩HandleFormPost ⊸⊃(°"POST" Method|°"/form" Path)
-  | ⍩HandleImages ⊸(°"/images" Path)
-  | ⍩(⍤⊙0 "Something went wrong [intentionally!]") ⊸(°"/error" Path)
-  | HttpServer.ServeStatic $"_/_" ThisFileDir "/public"
+  Http.Request!⍡(
+    HandleIndex ⊸⍩(°"/" Path)
+  | HandleRawHtml ⊸⍩(°"/raw" Path)
+  | HandleFormGet ⊸⍩⊃(°"GET" Method|°"/form" Path)
+  | HandleFormPost ⊸⍩⊃(°"POST" Method|°"/form" Path)
+  | HandleImages ⊸⍩(°"/images" Path)
+  | ⍤⊙0 "Something went wrong [intentionally!]" ⊸⍩(°"/error" Path)
+  | ⍩HttpServer.ServeStatic $"_/_" ThisFileDir "/public"
   | HttpServer.Errors.RespondPageNotFound
   )
 )

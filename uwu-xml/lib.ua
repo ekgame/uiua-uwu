@@ -45,21 +45,21 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
     ˜⊂
   )
 
-  DumpDebug ← |1 $"- _" ⍣(
-    ⊸Assert!Struct!Tag
+  DumpDebug ← |1 $"- _" ⍡(
+    ⊸⍩Assert!Struct!Tag
     Tag!⊃(
       $"<__></_>" ⊃(Name|AttrsToString Attrs|Name)
     | Strings.Indent 2 /$"_\n_" ⍚DumpDebug Children)
     $"_\n_"
-  | $"<__ />" Void!⊃(Name|AttrsToString Attrs) ⊸Assert!Struct!Void
-  | $"[Escaped] _"repr Text!Text ⊸Assert!Struct!Text
-  | $"[Raw] _"repr RawText!Text ⊸Assert!Struct!RawText)
+  | $"<__ />" Void!⊃(Name|AttrsToString Attrs) ⊸⍩Assert!Struct!Void
+  | $"[Escaped] _"repr Text!Text ⊸⍩Assert!Struct!Text
+  | $"[Raw] _"repr RawText!Text ⊸⍩Assert!Struct!RawText)
 
-  ToString ← |1 ⍣(
-    $"<__>_</_>" Tag!⊃(Name|AttrsToString Attrs|/◇⊂ ⍚ToString Children|Name) ⊸Assert!Struct!Tag
-  | $"<__ />" Void!⊃(Name|AttrsToString Attrs) ⊸Assert!Struct!Void
-  | Escape Text!Text ⊸Assert!Struct!Text
-  | RawText!Text ⊸Assert!Struct!RawText)
+  ToString ← |1 ⍡(
+    $"<__>_</_>" Tag!⊃(Name|AttrsToString Attrs|/◇⊂ ⍚ToString Children|Name) ⊸⍩Assert!Struct!Tag
+  | $"<__ />" Void!⊃(Name|AttrsToString Attrs) ⊸⍩Assert!Struct!Void
+  | Escape Text!Text ⊸⍩Assert!Struct!Text
+  | RawText!Text ⊸⍩Assert!Struct!RawText)
 
   # Check if the value is terminal or a nested element that needs to be normalized.
   IsTerminalValue ← Assert!Is!Any!(
@@ -70,22 +70,22 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
   | Assert!String
   | Assert!Not!BoxType)
 
-  NormalizeValue ← ⍣(
-    ⊸Assert!Struct!Tag
-  | ⊸Assert!Struct!Void
-  | ⊸Assert!Struct!Text
-  | ⊸Assert!Struct!RawText
-  | NewText ⊸Assert!String
-  | NewText "" °{}
-  | NewText "" °[]
+  NormalizeValue ← ⍡(
+    ⊸⍩Assert!Struct!Tag
+  | ⊸⍩Assert!Struct!Void
+  | ⊸⍩Assert!Struct!Text
+  | ⊸⍩Assert!Struct!RawText
+  | NewText ⊸⍩Assert!String
+  | NewText "" ⍩°{}
+  | NewText "" ⍩°[]
   | NewText repr)
 
   FlattenChildren   ← |1 ⨬(/◇⊂ ⍚FlattenChildren|□₁) ⊸IsTerminalValue
   NormalizeChildren ← ⍚NormalizeValue FlattenChildren
 
-  TagName ← ⍣(
-    Tag.Name ⊸Assert!Struct!Tag
-  | Void.Name ⊸Assert!Struct!Void
+  TagName ← ⍡(
+    Tag.Name ⊸⍩Assert!Struct!Tag
+  | Void.Name ⊸⍩Assert!Struct!Void
   | ⍤⊙0 $"The value is not a tag or void element: _" repr
   )
 └─╴

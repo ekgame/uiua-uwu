@@ -136,7 +136,7 @@ Assert ~ "../uwu-assert/lib.ua"
   # If the top-level element is an <html> tag, the DOCTYPE declaration will be added automatically.
   # String ? Element
   ToString ← (
-    ResolvePrefix ← ⍣($"<!DOCTYPE _>" ⊸°"html" Xml.Element.TagName|⋅"")
+    ResolvePrefix ← ⍡($"<!DOCTYPE _>" ⊸⍩°"html" Xml.Element.TagName|⋅"")
     /$"_\n_" ⊃{ResolvePrefix|Xml.ToString}
   )
 

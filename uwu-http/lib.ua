@@ -41,7 +41,7 @@ UrlEncode ← (
   UrlEncoded ← (
     Decode ← (
       ⊸Assert!String
-      ⍣({} {} °""
+      ⍡({} {} ⍩°""
       | ⍚(∩(°UrlEncode Strings.Replace "+" " ") ⍣(°$"_=_"|⊙"")) °/$"_&_")
       QueryValues ∩⍉
     )
@@ -121,7 +121,7 @@ UrlEncode ← (
   # ListOfEncodings ? Struct!Headers
   GetTransferEncodings ← (
     ⊸Assert!Struct!Headers
-    ⍣(¯⌵ ≡Strings.Trim °/$"_,_" Headers.ExpectOne "Transfer-Encoding"|{})
+    ⍡(¯⌵ ≡Strings.Trim °/$"_,_" ⍩Headers.ExpectOne "Transfer-Encoding"|{})
   )
 
   # Infer whether the request body should be read in chunked mode.
@@ -182,18 +182,18 @@ UrlEncode ← (
   # Body ? Struct!Headers
   InferBodyReadingStrategyFromHeaders ← (
     ⊸Assert!Struct!Headers
-    ⍣(Chunked °1 Headers.IsChunked
-    | ContentLength Headers.GetContentLength
+    ⍡(Chunked ⍩°1 Headers.IsChunked
+    | ContentLength ⍩Headers.GetContentLength
     | Empty
     )
   )
 
   # Read the body of an HTTP message from a byte stream given a strategy.
   # Bytes ? BodyReadingStrategy StreamHandle
-  ReadBodyFromStream ← ⍣(
-    [] ◌ °Empty
-  | ⍩&rb °ContentLength
-  | °Chunked
+  ReadBodyFromStream ← ⍡(
+    [] ◌ ⍩°Empty
+  | &rb ⍩°ContentLength
+  | ⍩°Chunked
     # TODO: implement chunked transfer decoding
     ⍤"Chunked body decoding is currently unsupported"0
   )

@@ -21,7 +21,7 @@ GetMimeTypes ← (
 °/$"_\n_" GetMimeTypes
 
 # Remove comments and empty lines
-▽⊸≡◇⍣(0 °""|0 °@#⊢|1)
+▽⊸≡◇⍡(0 ⍩°""|0 ⍩°@#⊢|1)
 
 # Process and format into CSV string
 ⍚(⊜□ ⊸≠@\s ⍜⊜∘⋅@\s ⊸=@\t)
