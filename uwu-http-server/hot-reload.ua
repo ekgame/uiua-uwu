@@ -28,7 +28,7 @@ HotReloadScriptTagInDevEnv ↚ Html!(
 
 DevEnv ↚ °"DEV" ⌵&var "ENV"
 
-# Struct!Http~Response ? Struct!Http~Response
+# Struct!Http.Response ? Struct!Http.Response
 InsertScript ← (
   ⊸Assert!Struct!Http.Response
   Assert!Is!DevEnv
@@ -39,7 +39,7 @@ InsertScript ← (
 BuildVersion ↚ memo(°⋕now)
 
 # An endpoint that returns the current build version, used by the hot reload script to detect changes.
-# Struct!Http~Response ? Struct!Http~Request
+# Struct!Http.Response ? Struct!Http.Request
 BuildVersionEndpoint ← (
   ⊸Assert!Struct!Http.Request DevEnv
   °"/__uwu-build-version" Http.Request.Path

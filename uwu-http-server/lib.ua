@@ -17,7 +17,7 @@ GetMimeTypeByExtension ← °□ get ⊃(□|MimeTypesMap)
 
 # Handle an incoming HTTP connection.
 # Takes a stream handle and processes the request.
-# ? (Strict!Http~Response ? Struct!Http~Request) StreamHandle
+# ? (Strict!Http.Response ? Struct!Http.Request) StreamHandle
 HandleConnection! ↚ ⍣(
   # TODO: Run in a loop, handle multiple requests per connection
   # Might have to propose a function to check if a stream is closed.
@@ -43,7 +43,7 @@ HandleConnection! ↚ ⍣(
 # Start a HTTP server on the given [HostPort] (string in the format "hostaddress:portnumber").
 # Takes a function that receives a Request and expects a Response.
 #
-# `? (Struct!Http~Response ? Struct!Http~Request) HostPort:String`
+# `? (Struct!Http.Response ? Struct!Http.Request) HostPort:String`
 Serve! ← (
   ⊸Assert!String
   ⍢(◌poolHandleConnection!^ &tcpa|1) &tcpl
