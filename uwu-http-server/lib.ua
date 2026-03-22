@@ -23,21 +23,21 @@ HandleConnection! ↚ ⍣(
   # Might have to propose a function to check if a stream is closed.
 
   ⊸Assert!StreamHandle
-  ⊸Http~ParseRequestFromStream
+  ⊸Http.ParseRequestFromStream
 
   # Dispatch the request to the the handler to get a response
-  ⍣(HotReload~BuildVersionEndpoint      # The hot reload endpoint only works with ENV=dev environment variable
+  ⍣(HotReload.BuildVersionEndpoint      # The hot reload endpoint only works with ENV=dev environment variable
   | ^                                   # Then try the user-defined handler
-  | ⍩˜Errors~RespondInternalServerError # If the handler throws an error, return a 500 status with a message
+  | ⍩˜Errors.RespondInternalServerError # If the handler throws an error, return a 500 status with a message
   )
 
   # Check that a response was returned
-  ⍣(⍩Errors~RespondInternalServerError "Request was not handled" ⊸Assert!Struct!Http~Request|∘)
-  ⍣(⊸Assert!Struct!Http~Response|⍩Errors~RespondInternalServerError $"Something other than a response was produced: _")
+  ⍣(⍩Errors.RespondInternalServerError "Request was not handled" ⊸Assert!Struct!Http.Request|∘)
+  ⍣(⊸Assert!Struct!Http.Response|⍩Errors.RespondInternalServerError $"Something other than a response was produced: _")
 
   # In ENV=dev, attempt to insert the hot reload script into the response
-  HotReload~InsertScript
-  &cl ⊸&w Http~RawResponse~ToBytes Http~Response~ToRawResponse
+  HotReload.InsertScript
+  &cl ⊸&w Http.RawResponse.ToBytes Http.Response.ToRawResponse
 | &p $"Error: _" &cl)
 
 # Start a HTTP server on the given [HostPort] (string in the format "hostaddress:portnumber").
@@ -50,9 +50,9 @@ Serve! ← (
 )
 
 ServeStatic ← (
-  ◡⊓(Assert!String|Assert!Struct!Http~Request)
-  ⟜(Fs~NormalizePath ⊂) ˜⊂@/ ∩Fs~NormalizePath ⊙Http~Request~Path
+  ◡⊓(Assert!String|Assert!Struct!Http.Request)
+  ⟜(Fs.NormalizePath ⊂) ˜⊂@/ ∩Fs.NormalizePath ⊙Http.Request.Path
   # Ensure the path is within the static directory
   ⊸⍣(°1⊢⌕|⍤⊙0"Request path tried to escape the directory")
-  Http~ResponseOk &frab
+  Http.ResponseOk &frab
 )

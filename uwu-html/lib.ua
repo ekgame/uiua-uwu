@@ -136,13 +136,13 @@ Assert ~ "../uwu-assert/lib.ua"
   # If the top-level element is an <html> tag, the DOCTYPE declaration will be added automatically.
   # String ? Element
   ToString ← (
-    ResolvePrefix ← ⍣($"<!DOCTYPE _>" ⊸°"html" Xml~Element~TagName|⋅"")
-    /$"_\n_" ⊃{ResolvePrefix|Xml~ToString}
+    ResolvePrefix ← ⍣($"<!DOCTYPE _>" ⊸°"html" Xml.Element.TagName|⋅"")
+    /$"_\n_" ⊃{ResolvePrefix|Xml.ToString}
   )
 
   # Create a text element with the given text content, which will not be escaped and will be displayed verbatim.
   # `Tag!RawText ? String`
-  UnsafeRawText ← Xml~UnsafeRawText
+  UnsafeRawText ← Xml.UnsafeRawText
 
   # Create an HTML comment with the given text content.
   # `Tag!RawText ? String`

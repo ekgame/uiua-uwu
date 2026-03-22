@@ -39,11 +39,11 @@ RenderLayout ← Html!(ToString Html {
   }
 })
 
-HandleIndex ← Http~ResponseOk RenderLayout ⋅Html!{
+HandleIndex ← Http.ResponseOk RenderLayout ⋅Html!{
   P "Welcome to the uwu demo! This is the home page."
 }
 
-HandleRawHtml ← Http~ResponseOk RenderLayout ⋅Html!{
+HandleRawHtml ← Http.ResponseOk RenderLayout ⋅Html!{
   P $ Heres some raw HTML: <script>alert("unsafe input")</script>. It's escaped without any special handling.
   Br
   P UnsafeRawText $ This is some raw HTML that is not escaped: <strong>bold text</strong> and <em>italic text</em>. Use <code class="bg-gray-200">UnsafeRawText</code> to include unescaped HTML.
@@ -75,20 +75,20 @@ HandleRawHtml ← Http~ResponseOk RenderLayout ⋅Html!{
 
   Validate ← (
     ⊸Assert!Struct!FormData
-    ⊙FormErrors~Default
-    ⟜⍣(°0 =0⧻ Name|FormErrors~Insert⋅"The name cannot be empty")
-    ⟜⍣(°0 >255⧻ Name|FormErrors~Insert⋅"The name cannot be longer than 255 characters")
-    ⟜⍣(°0 =0⧻ Message|FormErrors~Insert⋅"The message cannot be empty")
-    ⟜⍣(°0 >1000⧻ Message|FormErrors~Insert⋅"The message cannot be longer than 1000 characters")
+    ⊙FormErrors.Default
+    ⟜⍣(°0 =0⧻ Name|FormErrors.Insert⋅"The name cannot be empty")
+    ⟜⍣(°0 >255⧻ Name|FormErrors.Insert⋅"The name cannot be longer than 255 characters")
+    ⟜⍣(°0 =0⧻ Message|FormErrors.Insert⋅"The message cannot be empty")
+    ⟜⍣(°0 >1000⧻ Message|FormErrors.Insert⋅"The message cannot be longer than 1000 characters")
     ◌
   )
 
   FromRequest ← (
-    ⊸Assert!Struct!Http~Request
-    Http~Request~BodyAsForm
+    ⊸Assert!Struct!Http.Request
+    Http.Request.BodyAsForm
     New ⊃(
-      ⬚""Http~QueryValues~GetOne "name"
-    | ⬚""Http~QueryValues~GetOne "message"
+      ⬚""Http.QueryValues.GetOne "name"
+    | ⬚""Http.QueryValues.GetOne "message"
     )
   )
 └─╴
@@ -96,40 +96,40 @@ HandleRawHtml ← Http~ResponseOk RenderLayout ⋅Html!{
 ~Form {FormData FormErrors} ⬚∘Html!{
   H₁!(°⊸Class "text-2xl font-bold") "Contact us"
   (
-    ⊸FormErrors≈HasErrors °◌
+    ⊸FormErrors‥HasErrors °◌
     ⨬(""|Div!(°⊸Class "mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative") {
-      Ul!(°⊸Class "list-disc list-inside") (⍚Li FormErrors≈Messages)
+      Ul!(°⊸Class "list-disc list-inside") (⍚Li FormErrors‥Messages)
     })
   )
   Form!(°⊸Method "POST" °⊸Action "/form" °⊸Class "mt-4 space-y-4") {
     Div!(°⊸Class "space-y-1") {
       Label!(°⊸For "name" °⊸Class "block text-sm font-medium text-gray-700") "Name"
-      Input!(°⊸Type "text" °⊸Name "name" °⊸Id "name" °⊸Class "shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2" °⊸Value (FormData≈Name °◌))
+      Input!(°⊸Type "text" °⊸Name "name" °⊸Id "name" °⊸Class "shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2" °⊸Value (FormData‥Name °◌))
     }
     Div!(°⊸Class "space-y-1") {
       Label!(°⊸For "message" °⊸Class "block text-sm font-medium text-gray-700") "Message"
-      Textarea!(°⊸Name "message" °⊸Id "message" °⊸Class "shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2") (FormData≈Message°◌)
+      Textarea!(°⊸Name "message" °⊸Id "message" °⊸Class "shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2") (FormData‥Message°◌)
     }
     Button!(°⊸Type "submit" °⊸Class "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded") "Submit"
   }
 }
 
 HandleFormGet ← ⋅(
-  FormData~Default FormErrors~Default
-  Http~ResponseOk RenderLayout Form
+  FormData.Default FormErrors.Default
+  Http.ResponseOk RenderLayout Form
 )
 
 HandleFormPost ← (
-  ⊸FormData~Validate FormData~FromRequest
-  ⊸FormErrors~HasErrors
+  ⊸FormData.Validate FormData.FromRequest
+  ⊸FormErrors.HasErrors
   ⨬($"Submitted form data: _" ⋅repr
-    Html~Div!(°⊸Class "mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative")
-    Http~ResponseOk RenderLayout
-  | Http~ResponseBadRequest RenderLayout ˜Form
+    Html.Div!(°⊸Class "mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative")
+    Http.ResponseOk RenderLayout
+  | Http.ResponseBadRequest RenderLayout ˜Form
   )
 )
 
-HandleImages ← Http~ResponseOk RenderLayout⋅Html!({
+HandleImages ← Http.ResponseOk RenderLayout⋅Html!({
   P "Here are some static images served from the /public directory:"
   Div!(°⊸Class "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mt-4") {
     Img!(°⊸Src "/uwu.gif" °⊸Alt "uwu" °⊸Class "w-full h-auto")
@@ -138,15 +138,15 @@ HandleImages ← Http~ResponseOk RenderLayout⋅Html!({
 })
 
 "0.0.0.0:8000"
-HttpServer~Serve!(
-  Http~Request!⍣(
+HttpServer.Serve!(
+  Http.Request!⍣(
     ⍩HandleIndex ⊸(°"/" Path)
   | ⍩HandleRawHtml ⊸(°"/raw" Path)
   | ⍩HandleFormGet ⊸⊃(°"GET" Method|°"/form" Path)
   | ⍩HandleFormPost ⊸⊃(°"POST" Method|°"/form" Path)
   | ⍩HandleImages ⊸(°"/images" Path)
   | ⍩(⍤⊙0 "Something went wrong [intentionally!]") ⊸(°"/error" Path)
-  | HttpServer~ServeStatic $"_/_" ThisFileDir "/public"
-  | HttpServer~Errors~RespondPageNotFound
+  | HttpServer.ServeStatic $"_/_" ThisFileDir "/public"
+  | HttpServer.Errors.RespondPageNotFound
   )
 )

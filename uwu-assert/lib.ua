@@ -267,7 +267,7 @@ Path‼ ← ⍣(
     Build! ← MapBuilder!^ New
   └─╴
 
-  MapBuilder~Build!(
+  MapBuilder.Build!(
     Set "hello" "world"
     Set 1 2
     Set "optional" 3

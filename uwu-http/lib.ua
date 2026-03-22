@@ -42,13 +42,13 @@ UrlEncode ← (
     Decode ← (
       ⊸Assert!String
       ⍣({} {} °""
-      | ⍚(∩(°UrlEncode Strings~Replace "+" " ") ⍣(°$"_=_"|⊙"")) °/$"_&_")
+      | ⍚(∩(°UrlEncode Strings.Replace "+" " ") ⍣(°$"_=_"|⊙"")) °/$"_&_")
       QueryValues ∩⍉
     )
 
     Encode ← (
       ⊸Assert!Struct!QueryValues
-      /$"_&_" ⍚(Strings~Replace "%20" "+" $"_=_" ∩UrlEncode) °QueryValues
+      /$"_&_" ⍚(Strings.Replace "%20" "+" $"_=_" ∩UrlEncode) °QueryValues
     )
 
     ⌅(Encode|Decode)
@@ -103,7 +103,7 @@ UrlEncode ← (
   # Headers ? List!String
   FromStringLines ← (
     ⊸Assert!List!String
-    Headers ⍚(⊙Strings~Trim °$"_:_")
+    Headers ⍚(⊙Strings.Trim °$"_:_")
   )
 
   # Attempt to get declared content length from headers.
@@ -111,7 +111,7 @@ UrlEncode ← (
   # Int ? Struct!Headers
   GetContentLength ← (
     ⊸Assert!Struct!Headers
-    Headers~ExpectOne "Content-Length"
+    Headers.ExpectOne "Content-Length"
     ⍣(⋕|⍤"'Content-Length' must be a number"0)
     ⟜(⍤"'Content-Length' must be zero or positive"≥0)
     ⟜(⍤"'Content-Length' must be an integer"=⊸⁅)
@@ -121,7 +121,7 @@ UrlEncode ← (
   # ListOfEncodings ? Struct!Headers
   GetTransferEncodings ← (
     ⊸Assert!Struct!Headers
-    ⍣(¯⌵ ≡Strings~Trim °/$"_,_" Headers~ExpectOne "Transfer-Encoding"|{})
+    ⍣(¯⌵ ≡Strings.Trim °/$"_,_" Headers.ExpectOne "Transfer-Encoding"|{})
   )
 
   # Infer whether the request body should be read in chunked mode.
@@ -152,7 +152,7 @@ UrlEncode ← (
   # String ? RawRequestHeader
   Dump ← (
     ⊸Assert!Struct!RawRequestHeader
-    $"_\r\n_" ⊃($"_ _ HTTP/1.1" ⊃Method Path|Headers~Dump Headers)
+    $"_\r\n_" ⊃($"_ _ HTTP/1.1" ⊃Method Path|Headers.Dump Headers)
   )
 └─╴
 
@@ -168,7 +168,7 @@ UrlEncode ← (
   # String ? RawResponseHeader
   Dump ← (
     ⊸Assert!Struct!RawResponseHeader
-    /$"_\r\n_" ▽⊸(≠□"") ⊃{$"HTTP/1.1 _" StatusCode|Headers~Dump Headers}
+    /$"_\r\n_" ▽⊸(≠□"") ⊃{$"HTTP/1.1 _" StatusCode|Headers.Dump Headers}
   )
 └─╴
 
@@ -182,8 +182,8 @@ UrlEncode ← (
   # Body ? Struct!Headers
   InferBodyReadingStrategyFromHeaders ← (
     ⊸Assert!Struct!Headers
-    ⍣(Chunked °1 Headers~IsChunked
-    | ContentLength Headers~GetContentLength
+    ⍣(Chunked °1 Headers.IsChunked
+    | ContentLength Headers.GetContentLength
     | Empty
     )
   )
@@ -218,14 +218,14 @@ UrlEncode ← (
   # ByteArray ? Struct!RawRequest
   ToBytes ← (
     ⊸Assert!Struct!RawRequest
-    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawRequestHeader~Dump RawRequestHeader|Body)
+    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawRequestHeader.Dump RawRequestHeader|Body)
   )
 
   # Debug dump the request to a string, with the body truncated if it's not valid UTF-8.
   # String ? Struct!RawRequest
   DebugDump ← (
     ⊸Assert!Struct!RawRequest
-    ⊂⊃(˜⊂ "\r\n\r\n" RawRequestHeader~Dump RawRequestHeader|⍣(°utf₈|"[binary data]") Body)
+    ⊂⊃(˜⊂ "\r\n\r\n" RawRequestHeader.Dump RawRequestHeader|⍣(°utf₈|"[binary data]") Body)
   )
 └─╴
 
@@ -240,14 +240,14 @@ UrlEncode ← (
   # ByteArray ? Struct!RawResponse
   ToBytes ← (
     ⊸Assert!Struct!RawResponse
-    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawResponseHeader~Dump RawResponseHeader|Body)
+    ⊂⊃(utf₈ ˜⊂ "\r\n\r\n" RawResponseHeader.Dump RawResponseHeader|Body)
   )
 
   # Debug dump the response to a string, with the body truncated if it's not valid UTF-8.
   # String ? Struct!RawResponse
   DebugDump ← (
     ⊸Assert!Struct!RawResponse
-    ⊂⊃(˜⊂ "\r\n\r\n" RawResponseHeader~Dump RawResponseHeader|⍣(°utf₈|"[binary data]") Body)
+    ⊂⊃(˜⊂ "\r\n\r\n" RawResponseHeader.Dump RawResponseHeader|⍣(°utf₈|"[binary data]") Body)
   )
 └─╴
 
@@ -265,11 +265,11 @@ UrlEncode ← (
   # Convert a raw request to a structured request, validating the method, host, path, and headers.
   # Request ? Struct!RawRequest
   FromRawRequest ← (
-    ExtractNormalizedMethod ← ⟜IsValidHttpMethod ⌵ RawRequest~RawRequestHeader≈Method
-    ExtractHost ← Headers~ExpectOne "Host" RawRequest~RawRequestHeader≈Headers
-    ExtractPathAndQuery ← ⊙°QueryValues~UrlEncoded ⍣(°$"_?_"|⊙⋅"") RawRequest~RawRequestHeader≈Path
-    ExtractHeaders ← RawRequest~RawRequestHeader≈Headers
-    ExtractBody ← RawRequest~Body
+    ExtractNormalizedMethod ← ⟜IsValidHttpMethod ⌵ RawRequest.RawRequestHeader‥Method
+    ExtractHost ← Headers.ExpectOne "Host" RawRequest.RawRequestHeader‥Headers
+    ExtractPathAndQuery ← ⊙°QueryValues.UrlEncoded ⍣(°$"_?_"|⊙⋅"") RawRequest.RawRequestHeader‥Path
+    ExtractHeaders ← RawRequest.RawRequestHeader‥Headers
+    ExtractBody ← RawRequest.Body
 
     ⊸Assert!Struct!RawRequest
     ⊃(ExtractNormalizedMethod|ExtractHost|ExtractPathAndQuery|ExtractHeaders|ExtractBody)
@@ -280,16 +280,16 @@ UrlEncode ← (
   # Headers ? Struct!Request
   GetComputedHeaders ← (
     ⊸Assert!Struct!Request
-    ⊙Headers~Default
-    ⟜(⨬(◌|Headers~Set "Content-Length" °⋕) ⊸>₀⧻Body)
-    Headers~Set "Host" Host
+    ⊙Headers.Default
+    ⟜(⨬(◌|Headers.Set "Content-Length" °⋕) ⊸>₀⧻Body)
+    Headers.Set "Host" Host
   )
 
   # Convert a structured request to a raw request for sending over a network.
   # RawRequest ? Struct!Request
   ToRawRequest ← (
-    FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) QueryValues~UrlEncoded Query)
-    ComputeHeaders ← Headers~MergeOverride ⊃(GetComputedHeaders|Headers)
+    FormatPath ← ⊂⊃(Path|⍥(⊂@?) ⊸(>₀⧻) QueryValues.UrlEncoded Query)
+    ComputeHeaders ← Headers.MergeOverride ⊃(GetComputedHeaders|Headers)
 
     ⊸Assert!Struct!Request
     Request!⊃(RawRequestHeader ⊃(Method|FormatPath|ComputeHeaders)|Body)
@@ -303,7 +303,7 @@ UrlEncode ← (
 
   BodyAsForm ← (
     ⊸Assert!Struct!Request
-    °QueryValues~UrlEncoded BodyAsString
+    °QueryValues.UrlEncoded BodyAsString
   )
 └─╴
 
@@ -317,9 +317,9 @@ UrlEncode ← (
   # Convert a raw response to a structured response, validating the status code and headers.
   # Response ? Struct!RawResponse
   FromRawResponse ← (
-    ExtractStatusCode ← RawResponse~RawResponseHeader≈StatusCode
-    ExtractHeaders ← RawResponse~RawResponseHeader≈Headers
-    ExtractBody ← RawResponse~Body
+    ExtractStatusCode ← RawResponse.RawResponseHeader‥StatusCode
+    ExtractHeaders ← RawResponse.RawResponseHeader‥Headers
+    ExtractBody ← RawResponse.Body
 
     ⊸Assert!Struct!RawResponse
     ⊃(ExtractStatusCode|ExtractHeaders|ExtractBody)
@@ -330,15 +330,15 @@ UrlEncode ← (
   # Headers ? Struct!Response
   GetComputedHeaders ← (
     ⊸Assert!Struct!Response
-    ⊙Headers~Default
-    ⨬(◌|Headers~Set "Content-Length" °⋕) ⊸>₀⧻Body
+    ⊙Headers.Default
+    ⨬(◌|Headers.Set "Content-Length" °⋕) ⊸>₀⧻Body
   )
 
   # Convert a structured response to a raw response for sending over a network.
   # RawResponse ? Struct!Response
   ToRawResponse ← (
     ⊸Assert!Struct!Response
-    Response!⊃(StatusCode|Headers~MergeOverride ⊃(GetComputedHeaders|Headers)|Body)
+    Response!⊃(StatusCode|Headers.MergeOverride ⊃(GetComputedHeaders|Headers)|Body)
     RawResponse RawResponseHeader
   )
 └─╴
@@ -351,17 +351,17 @@ ParseRequestFromStream ← (
   ParseRequestHeader ← (
     ⊸Assert!String
     °⊂ °/$"_\r\n_"
-    ⊓(⊙⊙◌ °$"_ _ _"|Headers~FromStringLines)
+    ⊓(⊙⊙◌ °$"_ _ _"|Headers.FromStringLines)
     RawRequestHeader
   )
 
   ⊸Assert!StreamHandle
   ParseRequestHeader ↘¯4 ⊸&ru "\r\n\r\n"
   RawRequest ⟜(
-    RawRequestHeader~Headers
-    BodyReadingStrategy~FromHeadersAndStream
+    RawRequestHeader.Headers
+    BodyReadingStrategy.FromHeadersAndStream
   )
-  Request~FromRawRequest
+  Request.FromRawRequest
 )
 
 # Parses an HTTP response from a byte stream.
@@ -373,17 +373,17 @@ ParseResponseFromStream ← (
     ⊸Assert!String
     °⊂ °/$"_\r\n_"
     ⊓(⍣(◇⋕⊡₁ ◇°/$"_ _"|⍤"Failed to parse status code"0)
-    | Headers~FromStringLines)
+    | Headers.FromStringLines)
     RawResponseHeader
   )
 
   ⊸Assert!StreamHandle
   ParseResponseHeader ↘¯4 ⊸&ru "\r\n\r\n"
   RawResponse ⟜(
-    RawResponseHeader~Headers
-    BodyReadingStrategy~FromHeadersAndStream
+    RawResponseHeader.Headers
+    BodyReadingStrategy.FromHeadersAndStream
   )
-  Response~FromRawResponse
+  Response.FromRawResponse
 )
 
 ┌╶╶RequestBuilder
@@ -401,7 +401,7 @@ ParseResponseFromStream ← (
   | $Host ""
   | $Path ""
   | $Query ""
-  | $Headers Headers~Default
+  | $Headers Headers.Default
   | $Body []
   )
 
@@ -455,14 +455,14 @@ ParseResponseFromStream ← (
   # RequestBuilder ? HeaderName HeaderValue RequestBuilder
   AddHeader ← (
     ◡Assert!⊓(String|String|Struct!RequestBuilder)
-    °⊸Headers′ Headers~Add ⊸⊙⊙Headers′
+    °⊸Headers′ Headers.Add ⊸⊙⊙Headers′
   )
 
   # Set a header for the request, replacing any existing headers with the same name.
   # RequestBuilder ? HeaderName HeaderValue RequestBuilder
   SetHeader ← (
     ◡Assert!⊓(String|String|Struct!RequestBuilder)
-    °⊸Headers′ Headers~Set ⊸⊙⊙Headers′
+    °⊸Headers′ Headers.Set ⊸⊙⊙Headers′
   )
 
   Build ← (
@@ -485,7 +485,7 @@ BuildRequest! ← RequestBuilder!(Build RequestBuilder!^ Default)
 
   Default ← ResponseBuilder ⊃(
   | $StatusCode 200
-  | $Headers Headers~Default
+  | $Headers Headers.Default
   | $Body []
   )
 
@@ -507,14 +507,14 @@ BuildRequest! ← RequestBuilder!(Build RequestBuilder!^ Default)
   # ResponseBuilder ? HeaderName HeaderValue ResponseBuilder
   AddHeader ← (
     ◡Assert!⊓(String|String|Struct!ResponseBuilder)
-    °⊸Headers′ Headers~Add ⊸⊙⊙Headers′
+    °⊸Headers′ Headers.Add ⊸⊙⊙Headers′
   )
 
   # Set a header for the response, replacing any existing headers with the same name.
   # ResponseBuilder ? HeaderName HeaderValue ResponseBuilder
   SetHeader ← (
     ◡Assert!⊓(String|String|Struct!ResponseBuilder)
-    °⊸Headers′ Headers~Set ⊸⊙⊙Headers′
+    °⊸Headers′ Headers.Set ⊸⊙⊙Headers′
   )
 
   Build ← (

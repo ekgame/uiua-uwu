@@ -8,13 +8,13 @@ MimeTypesSource ← $ https://raw.githubusercontent.com/apache/httpd/refs/heads/
 
 # TODO: replace with a http client, when we have one
 GetMimeTypes ← (
-  Http~BuildRequest!(
+  Http.BuildRequest!(
     Url MimeTypesSource
     AddHeader "Connection" "close"
   )
-  Http~RawRequest~ToBytes Http~Request~ToRawRequest
-  ⍜(&tlsc "raw.githubusercontent.com:443"|Http~ParseResponseFromStream ˜⊸&w)
-  °utf₈ Http~Response~Body
+  Http.RawRequest.ToBytes Http.Request.ToRawRequest
+  ⍜(&tlsc "raw.githubusercontent.com:443"|Http.ParseResponseFromStream ˜⊸&w)
+  °utf₈ Http.Response.Body
 )
 
 # Get all mime types and split by new line

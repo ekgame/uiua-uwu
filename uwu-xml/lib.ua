@@ -49,7 +49,7 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
     ⊸Assert!Struct!Tag
     Tag!⊃(
       $"<__></_>" ⊃(Name|AttrsToString Attrs|Name)
-    | Strings~Indent 2 /$"_\n_" ⍚DumpDebug Children)
+    | Strings.Indent 2 /$"_\n_" ⍚DumpDebug Children)
     $"_\n_"
   | $"<__ />" Void!⊃(Name|AttrsToString Attrs) ⊸Assert!Struct!Void
   | $"[Escaped] _"repr Text!Text ⊸Assert!Struct!Text
@@ -84,8 +84,8 @@ ToConvenientIdentifier ↚ ⍜⊜□⍚DigitsToSubscripts ⊸∊Numbers
   NormalizeChildren ← ⍚NormalizeValue FlattenChildren
 
   TagName ← ⍣(
-    Tag~Name ⊸Assert!Struct!Tag
-  | Void~Name ⊸Assert!Struct!Void
+    Tag.Name ⊸Assert!Struct!Tag
+  | Void.Name ⊸Assert!Struct!Void
   | ⍤⊙0 $"The value is not a tag or void element: _" repr
   )
 └─╴
@@ -125,16 +125,16 @@ DefineVoid! ←^ (
 
 # Create a text element with the given text content, which will not be escaped and will be displayed verbatim.
 # `Tag!RawText ? String`
-UnsafeRawText ← Element~NewRawText
+UnsafeRawText ← Element.NewRawText
 
 # Render an XML element to a string.
 # String ? Element
-ToString ← Element~ToString
+ToString ← Element.ToString
 
 # Render an XML element to a debug string as a human-readable representation of the element's structure.
 # Intended for debugging purposes, not for display. The output format may change without warning.
 # String ? Element
-ToDebugString ← Element~DumpDebug
+ToDebugString ← Element.DumpDebug
 
 ┌─╴test
   DefineTag!(Div|Id|Class)
