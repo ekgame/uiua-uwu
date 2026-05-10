@@ -6,38 +6,38 @@ Http ~ "../uwu-http/lib.ua"
 ~ "../uwu-html/lib.ua" ~ Html
 
 RenderLayout ← Html!(ToString Html {
-  Head {
-    Title "uwu demo"
-    Meta!(°⊸Charset "UTF-8")
-    Meta!(°⊸Name "viewport" °⊸Content "width=device-width, initial-scale=1.0")
-    Script!(°⊸Src "https://cdn.tailwindcss.com") ""
-  }
-  Body!(°⊸Class "bg-gray-100") {
-    Main!(°⊸Class "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 px-4") {
-      Nav {
-        Div {
-          Div!(°⊸Class "flex items-center justify-between h-16") {
-            Div!(°⊸Class "flex items-center") {
-              Div!(°⊸Class "flex-shrink-0") {
-                H₁!(°⊸Class "text-xl font-bold") "uwu demo"
-              }
-              Div!(°⊸Class "ml-10 flex items-baseline space-x-4") {
-                Link ← A!(°⊸Class "text-blue-500 hover:text-blue-700 hover:underline" °⊸Href)
-                Link "/" "Home"
-                Link "/raw" "Raw HTML"
-                Link "/form" "Form"
-                Link "/images" "Images"
-                Link "/error?key=value&something=else&list[]=1&list[]=2" "Error"
-                Link "/non-existant-page" "404"
+    Head {
+      Title "uwu demo"
+      Meta!(°⊸Charset "UTF-8")
+      Meta!(°⊸Name "viewport" °⊸Content "width=device-width, initial-scale=1.0")
+      Script!(°⊸Src "https://cdn.tailwindcss.com") ""
+    }
+    Body!(°⊸Class "bg-gray-100") {
+      Main!(°⊸Class "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 px-4") {
+        Nav {
+          Div {
+            Div!(°⊸Class "flex items-center justify-between h-16") {
+              Div!(°⊸Class "flex items-center") {
+                Div!(°⊸Class "flex-shrink-0") {
+                  H₁!(°⊸Class "text-xl font-bold") "uwu demo"
+                }
+                Div!(°⊸Class "ml-10 flex items-baseline space-x-4") {
+                  Link ← A!(°⊸Class "text-blue-500 hover:text-blue-700 hover:underline" °⊸Href)
+                  Link "/" "Home"
+                  Link "/raw" "Raw HTML"
+                  Link "/form" "Form"
+                  Link "/images" "Images"
+                  Link "/error?key=value&something=else&list[]=1&list[]=2" "Error"
+                  Link "/non-existant-page" "404"
+                }
               }
             }
           }
         }
+        Div ∘ # Page content goes here
       }
-      Div ∘ # Page content goes here
     }
-  }
-})
+  })
 
 HandleIndex ← Http.ResponseOk RenderLayout ⋅Html!{
   P "Welcome to the uwu demo! This is the home page."
@@ -98,8 +98,8 @@ HandleRawHtml ← Http.ResponseOk RenderLayout ⋅Html!{
   (
     ⊸FormErrors‥HasErrors °◌
     ⨬(""|Div!(°⊸Class "mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative") {
-      Ul!(°⊸Class "list-disc list-inside") (⍚Li FormErrors‥Messages)
-    })
+        Ul!(°⊸Class "list-disc list-inside") (⍚Li FormErrors‥Messages)
+      })
   )
   Form!(°⊸Method "POST" °⊸Action "/form" °⊸Class "mt-4 space-y-4") {
     Div!(°⊸Class "space-y-1") {
@@ -130,12 +130,12 @@ HandleFormPost ← (
 )
 
 HandleImages ← Http.ResponseOk RenderLayout⋅Html!({
-  P "Here are some static images served from the /public directory:"
-  Div!(°⊸Class "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mt-4") {
-    Img!(°⊸Src "/uwu.gif" °⊸Alt "uwu" °⊸Class "w-full h-auto")
-    Img!(°⊸Src "/kala.png" °⊸Alt "Kala - the Uiua mascot" °⊸Class "w-full h-auto")
-  }
-})
+    P "Here are some static images served from the /public directory:"
+    Div!(°⊸Class "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mt-4") {
+      Img!(°⊸Src "/uwu.gif" °⊸Alt "uwu" °⊸Class "w-full h-auto")
+      Img!(°⊸Src "/kala.png" °⊸Alt "Kala - the Uiua mascot" °⊸Class "w-full h-auto")
+    }
+  })
 
 "0.0.0.0:8000"
 HttpServer.Serve!(

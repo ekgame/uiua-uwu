@@ -13,7 +13,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 WORKDIR /tmp
 RUN git clone https://github.com/uiua-lang/uiua.git && \
   cd uiua && \
-  git checkout 2bd95b4bda0e13ca60b5444b37c00d0190ea7888 && \
+  git checkout ec5fad242ac719c126373419037a5fc0e4a69686 && \
   cargo build --release && \
   cp target/release/uiua /usr/local/bin/uiua
 

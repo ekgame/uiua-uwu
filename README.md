@@ -51,13 +51,13 @@ HandleIndex ← Http.ResponseOk Html!(ToString Html {
 HttpServer.Serve!(
   # This macro takes a Http.Request and should produce a Http.Response.
 
-  Http~Request!⍡(
+  Http.Request!⍡(
     # Define a route for the index page and how to handle it
     HandleIndex ⍩°"/" Path
   | # Serve static files from a "public" directory, relative to this file (optional)
-    ⍩HttpServer~ServeStatic $"_/_" ThisFileDir "/public"
+    ⍩HttpServer.ServeStatic $"_/_" ThisFileDir "/public"
   | # Show an error when no route matches
-    HttpServer~Errors~RespondPageNotFound
+    HttpServer.Errors.RespondPageNotFound
   )
 )
 ```
